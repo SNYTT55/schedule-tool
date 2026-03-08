@@ -233,13 +233,33 @@
     function fmt(y, m) { return `${y}-${String(m).padStart(2, '0')}`; }
 
     function init() {
-        loadConfig();
-        const curY = new Date().getFullYear();
-        for(let y = curY - 1; y <= curY + 2; y++) Y.add(new Option(y, y));
-        const upM = () => { let cur = M.value||(new Date().getMonth() + 1); M.innerHTML=""; for(let m=1;m<=12;m++) M.add(new Option(m, m)); M.value=cur; };
-        Y.value = curY; upM();
-        Y.onchange = render; M.onchange = render; render();
-    }
+    loadConfig();
+    const now = new Date();
+    const curY = now.getFullYear();
+    const curM = now.getMonth() + 1;
+
+    // 1. 嘗試從 localStorage 讀取上次選取的年月，如果沒有就用目前的
+    let savedY = localStorage.getItem('lastY') || curY;
+    let savedM = localStorage.getItem('lastM') || curM;
+
+    // 2. 初始化年份選單
+    for(let y = curY - 1; y <= curY + 2; y++) Y.add(new Option(y, y));
+    Y.value = savedY;
+
+    // 3. 初始化月份選單
+    const upM = () => {
+        M.innerHTML = "";
+        for(let m = 1; m <= 12; m++) M.add(new Option(m, m));
+        M.value = savedM; // 使用儲存的月份
+    };
+    upM();
+
+    // 4. 當選單改變時，除了渲染還要儲存目前選擇
+    Y.onchange = () => { localStorage.setItem('lastY', Y.value); render(); };
+    M.onchange = () => { localStorage.setItem('lastM', M.value); render(); };
+
+    render();
+}
 
     function switchMode(m) {
         document.querySelectorAll('.mode-btn').forEach((b, i) => b.classList.toggle('active', (i===0 && m==='v') || (i===1 && m==='admin')));
