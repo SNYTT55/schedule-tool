@@ -3,35 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Shift Manager</title>
+    <title>🐳🐳🐳🐳🐳🐳</title>
     <style>
         :root { 
             --v-clr: #0984e3; --s-clr: #fbc531; --bg: #e1f5fe; --danger: #ff7675; --success: #00cec9;
             --ocean-grad: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
             --card-grad: radial-gradient(circle at center, #00cec9 0%, #0984e3 70%, #0a3d62 100%);
         }
-        body { font-family: -apple-system, "微軟正黑體", sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 10px; margin: 0; -webkit-tap-highlight-color: transparent; }
+        /* 2. 禁止選取與優化觸控 */
+        * { touch-action: manipulation; -webkit-user-select: none; user-select: none; }
+        input, textarea { -webkit-user-select: text; user-select: text; }
+
+        body { font-family: -apple-system, "微軟正黑體", sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 10px; margin: 0; }
         .container { background: white; padding: 25px 15px; border-radius: 45px; box-shadow: 0 20px 50px rgba(9, 132, 227, 0.15); width: 100%; max-width: 480px; box-sizing: border-box; position: relative; border: 4px solid #b3e5fc; }
         .container::before { content: "🐳"; position: absolute; top: -22px; left: 50%; transform: translateX(-50%); background: white; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 6px 12px rgba(9, 132, 227, 0.2); border: 3px solid #b3e5fc; z-index: 10; }
+        
         .mode-switcher { background: #e1f5fe; border-radius: 25px; display: flex; padding: 6px; margin-bottom: 20px; }
         .mode-btn { flex: 1; border: none; padding: 12px; border-radius: 20px; font-size: 14px; font-weight: bold; cursor: pointer; transition: 0.3s; color: #546e7a; background: transparent; }
         .mode-btn.active { background: white; color: var(--v-clr); box-shadow: 0 4px 15px rgba(9, 132, 227, 0.1); }
+        
         .legend-area { display: flex; flex-direction: column; gap: 2px; }
         .legend-staff { display: flex; gap: 15px; font-size: 14px; font-weight: 800; color: #455a64; }
         .dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; margin-right: 6px; vertical-align: middle; }
         .v-bg { background: var(--v-clr); box-shadow: 0 0 8px rgba(9, 132, 227, 0.4); } 
-        /* 這裡調整了金色光暈的 RGB 數值 */
         .s-bg { background: var(--s-clr); box-shadow: 0 0 8px rgba(251, 197, 49, 0.4); }
         .time-label { font-size: 10px; color: #81d4fa; font-weight: bold; }
+
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 15px; }
         .weekday { text-align: center; font-size: 12px; color: #81d4fa; font-weight: 800; padding-bottom: 8px; }
         .day { aspect-ratio: 0.7; display: flex; flex-direction: column; border-radius: 18px; border: 2px solid #f1f8fb; overflow: hidden; position: relative; background: #fff; cursor: pointer; transition: transform 0.1s; }
+        .day:active { transform: scale(0.95); }
+        
         .date-num { font-size: 11px; padding: 5px; color: #b3e5fc; font-weight: bold; position: absolute; z-index: 2; }
         .slot { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 900; color: white; }
         .is-locked-mode .day { aspect-ratio: 1.2; border-radius: 12px; }
         .is-full-v .slot-am { flex: 1; font-size: 15px; background: var(--v-clr); }
         .is-full-s .slot-am { flex: 1; font-size: 15px; background: var(--s-clr); }
         .is-full-v .slot-pm, .is-full-s .slot-pm { display: none; }
+
+        /* 其餘樣式保持不變... */
         .salary-card { position: relative; overflow: hidden; border-radius: 35px; padding: 22px; display: none; margin-top: 15px; background: var(--card-grad); border: 4px solid #fff; box-shadow: 0 15px 40px rgba(9, 132, 227, 0.3); }
         .salary-card::after { content: "🫧"; position: absolute; right: 10px; top: 10px; opacity: 0.3; font-size: 30px; }
         .salary-card.show { display: block; animation: bubbleUp 0.5s ease; }
@@ -95,8 +105,8 @@
                     <div style="color:rgba(255,255,255,0.8); font-weight:800;"><span id="days-v" style="font-size:20px;">0</span> <small style="font-size:10px;">Days</small></div>
                 </div>
                 <div style="display:flex; gap:6px; flex:0 0 145px;">
-                    <div class="bonus-box"><label>Bonus</label><input type="number" id="bt_main" oninput="syncBonus()" placeholder="0"></div>
-                    <div class="bonus-box"><label>V獎金</label><input type="number" id="bv_main" oninput="syncBonus()" placeholder="0"></div>
+                    <div class="bonus-box"><label>💰💰</label><input type="number" id="bt_main" oninput="syncBonus()" placeholder="0"></div>
+                    <div class="bonus-box"><label>V</label><input type="number" id="bv_main" oninput="syncBonus()" placeholder="0"></div>
                 </div>
             </div>
             <div id="salaryFormula"></div> </div>
@@ -130,6 +140,7 @@
 <script>
     const $ = id => document.getElementById(id), KEY = "v_s_v1_purple";
     let Y = $("yearSel"), M = $("monthSel"), pressTimer;
+    
     function saveConfig() { localStorage.setItem("confA", $("baseA").value); localStorage.setItem("confB", $("baseB").value); calc(); }
     function loadConfig() { $("baseA").value = localStorage.getItem("confA") || 1900; $("baseB").value = localStorage.getItem("confB") || 1800; }
     function fmt(y, m) { return `${y}-${String(m).padStart(2, '0')}`; }
@@ -137,6 +148,7 @@
     function switchMode(m) { document.querySelectorAll('.mode-btn').forEach((b, i) => b.classList.toggle('active', (i===0 && m==='v') || (i===1 && m==='admin'))); $("vArea").style.display = (m === 'v' ? 'block' : 'none'); $("adminArea").style.display = (m === 'admin' ? 'block' : 'none'); if(m==='admin') calc(); }
     function toggleConfirm() { let y=Y.value, m=M.value; if(localStorage.getItem(`pd-${y}-${m}`)==='true') return; let cur = localStorage.getItem(`cf-${y}-${m}`) === 'true'; let nextStatus = !cur; localStorage.setItem(`cf-${y}-${m}`, nextStatus); if(nextStatus) { localStorage.setItem(`lockA-${y}-${m}`, $("baseA").value); localStorage.setItem(`lockB-${y}-${m}`, $("baseB").value); } render(); }
     function quickPay(y, m) { if(localStorage.getItem(`cf-${y}-${m}`) !== 'true') return alert("請先確認航程！"); localStorage.setItem(`pd-${y}-${m}`, 'true'); render(); }
+    
     function render() {
         let y=Y.value, m=M.value, k=`${KEY}-${y}-${m}`, data=JSON.parse(localStorage.getItem(k))||{};
         let isPd = localStorage.getItem(`pd-${y}-${m}`)==='true', isCf = localStorage.getItem(`cf-${y}-${m}`)==='true';
@@ -153,7 +165,12 @@
         for(let i=0;i<fD;i++) h+='<div class="day empty" style="border:none; background:transparent;"></div>';
         for(let d=1; d<=dIM; d++) {
             let o=data[d]||{am:'',pm:'',mode:''}, cls = (o.mode==='full-v'?'is-full-v':(o.mode==='full-s'?'is-full-s':''));
-            h+=`<div class="day ${cls} ${isCf?'locked':''}" onmousedown="stP(${d})" onmouseup="edP(${d})" ontouchstart="stP(${d})" ontouchend="edP(${d})">
+            // 綁定觸控事件
+            h+=`<div class="day ${cls} ${isCf?'locked':''}" 
+                ontouchstart="stP(event, ${d})" 
+                ontouchend="edP(event, ${d})" 
+                onmousedown="stP(event, ${d})" 
+                onmouseup="edP(event, ${d})">
                 <div class="date-num">${d}</div><div style="flex:1; display:flex; flex-direction:column; width:100%;">
                 <div class="slot slot-am ${o.am?o.am+'-bg':''}">${o.am.toUpperCase()}</div>
                 <div class="slot slot-pm ${o.pm?o.pm+'-bg':''}">${o.pm.toUpperCase()}</div>
@@ -161,9 +178,35 @@
         }
         $("calendarGrid").innerHTML=h; calc();
     }
-    function stP(d){ if(localStorage.getItem(`cf-${Y.value}-${M.value}`)==='true') return; pressTimer=setTimeout(()=>{ let k=`${KEY}-${Y.value}-${M.value}`, data=JSON.parse(localStorage.getItem(k))||{}; data[d]={am:'',pm:'',mode:''}; localStorage.setItem(k, JSON.stringify(data)); render(); }, 600); }
-    function edP(d){ clearTimeout(pressTimer); if(pressTimer) hClick(d); }
-    function hClick(d){ if(localStorage.getItem(`cf-${Y.value}-${M.value}`)==='true') return; let k=`${KEY}-${Y.value}-${M.value}`, data=JSON.parse(localStorage.getItem(k))||{}; let ms=['','full-v','full-s','s-am-v-pm','v-am-s-pm'], cur=data[d]?.mode||'', n=ms[(ms.indexOf(cur)+1)%ms.length]; let map={'':{am:'',pm:'',mode:''}, 'full-v':{am:'v',pm:'v',mode:'full-v'}, 's-am-v-pm':{am:'s',pm:'v',mode:'s-am-v-pm'}, 'v-am-s-pm':{am:'v',pm:'s',mode:'v-am-s-pm'}, 'full-s':{am:'s',pm:'s',mode:'full-s'}}; data[d]=map[n]; localStorage.setItem(k, JSON.stringify(data)); render(); }
+
+    // 縮短長按時間至 400ms，增加整理速度
+    function stP(e, d){ 
+        if(localStorage.getItem(`cf-${Y.value}-${M.value}`)==='true') return;
+        pressTimer = setTimeout(() => { 
+            let k=`${KEY}-${Y.value}-${M.value}`, data=JSON.parse(localStorage.getItem(k))||{};
+            data[d]={am:'',pm:'',mode:''}; 
+            localStorage.setItem(k, JSON.stringify(data)); 
+            render();
+            pressTimer = null; // 標記已觸發長按
+        }, 400); 
+    }
+
+    function edP(e, d){ 
+        clearTimeout(pressTimer); 
+        if(pressTimer) hClick(d); // 如果定時器還在，說明是短點擊
+    }
+
+    function hClick(d){ 
+        if(localStorage.getItem(`cf-${Y.value}-${M.value}`)==='true') return; 
+        let k=`${KEY}-${Y.value}-${M.value}`, data=JSON.parse(localStorage.getItem(k))||{}; 
+        // 調整循環順序：將空白放第一位，方便點錯時快速切換
+        let ms=['','full-v','full-s','s-am-v-pm','v-am-s-pm'], cur=data[d]?.mode||'', n=ms[(ms.indexOf(cur)+1)%ms.length]; 
+        let map={'':{am:'',pm:'',mode:''}, 'full-v':{am:'v',pm:'v',mode:'full-v'}, 's-am-v-pm':{am:'s',pm:'v',mode:'s-am-v-pm'}, 'v-am-s-pm':{am:'v',pm:'s',mode:'v-am-s-pm'}, 'full-s':{am:'s',pm:'s',mode:'full-s'}}; 
+        data[d]=map[n]; 
+        localStorage.setItem(k, JSON.stringify(data)); 
+        render(); 
+    }
+
     function syncBonus() { localStorage.setItem(`bt-${Y.value}-${M.value}`, $("bt_main").value); localStorage.setItem(`bv-${Y.value}-${M.value}`, $("bv_main").value); calc(); }
     function calc() {
         let globalA = parseFloat($("baseA").value)||1900, globalB = parseFloat($("baseB").value)||1800;
@@ -216,13 +259,13 @@
                 let mbv = parseFloat(localStorage.getItem(`bv-${y}-${m}`))||0;
                 let vt = Math.round(v * (hA/30)) + mbv;
                 if(vt > 0) {
-                    items.push(`· ${fmt(y,m)}: $${vt.toLocaleString()} (${v}天${mbv>0?` + V獎金$${mbv}`:''}）`);
+                    items.push(`· ${fmt(y,m)}: $${vt.toLocaleString()} (${v}天${mbv>0?` + V獎金$${mbv}`:''})`);
                     total += vt;
                 }
             }
         });
         if(items.length){
-            let txt=`未結算明細\n----------\n${items.join('\n')}\n----------\n總計: $${total.toLocaleString()}`;
+            let txt=`目前待結算明細\n----------\n${items.join('\n')}\n----------\n總計: $${total.toLocaleString()}`;
             let el=document.createElement('textarea'); el.value=txt; document.body.appendChild(el); el.select();
             document.execCommand('copy'); document.body.removeChild(el);
             alert("明細已存入珍珠貝中！");
