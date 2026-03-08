@@ -299,57 +299,30 @@
 
     function stP(d){ 
         if(localStorage.getItem(`cf-${Y.value}-${M.value}`)==='true') return;
-        
-        // 1. 清除上一個可能殘留的計時器
         clearTimeout(pressTimer); 
-        
-        // 2. 第一層計時：0.6秒刪除該格 (Short Long Press)
+        // 0.6秒 刪除單格
         pressTimer = setTimeout(() => { 
             let k=`${KEY}-${Y.value}-${M.value}`, data=JSON.parse(localStorage.getItem(k))||{};
             delete data[d]; 
             localStorage.setItem(k, JSON.stringify(data));
             render();
-            
-            // 3. 第二層計時：總共 1.5秒則執行整月清空 (Super Long Press)
+            // 總共 1.5秒 整月清空
             pressTimer = setTimeout(() => {
                 localStorage.removeItem(k);
-                // 同時清空相關加碼資料，確保徹底重排
                 localStorage.removeItem(`bv-${Y.value}-${M.value}`);
                 localStorage.removeItem(`bt-${Y.value}-${M.value}`);
-                pressTimer = null; // 清空指針，避免 edP 再次觸發 hClick
+                pressTimer = null; // 關鍵：清空指針避免 edP 被當作點擊
                 render();
             }, 900); 
-
         }, 600); 
     }
 
     function edP(d){ 
-        // 只有當 pressTimer 還存在時，代表這是一個「短點擊」
         if (pressTimer) {
             clearTimeout(pressTimer);
             pressTimer = null; 
-            hClick(d); // 執行切換班表
+            hClick(d); 
         }
-    }
-    
-    function hClick(d){
-        // 安全檢查：若已鎖定則不動作
-        if(localStorage.getItem(`cf-${Y.value}-${M.value}`)==='true') return;
-        
-        let k=`${KEY}-${Y.value}-${M.value}`, data=JSON.parse(localStorage.getItem(k))||{};
-        let ms=['','full-v','full-s','s-am-v-pm','v-am-s-pm'], cur=data[d]?.mode||'', n=ms[(ms.indexOf(cur)+1)%ms.length];
-        let map={'':{am:'',pm:'',mode:''}, 'full-v':{am:'v',pm:'v',mode:'full-v'}, 's-am-v-pm':{am:'s',pm:'v',mode:'s-am-v-pm'}, 'v-am-s-pm':{am:'v',pm:'s',mode:'v-am-s-pm'}, 'full-s':{am:'s',pm:'s',mode:'full-s'}};
-        
-        // 修改點：如果狀態是空白，直接刪除該屬性，維持資料乾淨
-        if (n === '') { delete data[d]; } else { data[d]=map[n]; }
-
-        // 修改點：如果整個物件空了，直接移除 localStorage 的 key
-        if (Object.keys(data).length === 0) {
-            localStorage.removeItem(k);
-        } else {
-            localStorage.setItem(k, JSON.stringify(data));
-        }
-        render();
     }
     
     function hClick(d){
@@ -385,6 +358,7 @@
             
             let isPd = localStorage.getItem(`pd-${y}-${m}`)==='true', isCf = localStorage.getItem(`cf-${y}-${m}`)==='true';
             
+            // 過濾：未來月分且未確認/未領取則跳過；空資料也跳過
             if (targetYM > currentYM && !isPd && !isCf) return;
             let mbv = parseFloat(localStorage.getItem(`bv-${y}-${m}`)) || 0;
             if (v === 0 && mbv === 0 && !isPd) return;
