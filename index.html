@@ -8,21 +8,18 @@
         :root { 
             --v-clr: #0984e3; --s-clr: #00cec9; --bg: #f0f7fa; 
             --danger: #74b9ff; --success: #55efc4; 
-            --card-grad: radial-gradient(circle at center, #1e90ff 0%, #0652ad 70%, #0a3d62 100%);
+            --card-grad: radial-gradient(circle at top left, #1e90ff 0%, #0652ad 70%, #0a3d62 100%);
         }
 
-        /* 全域修正：確保寬度計算包含 padding 與 border */
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
 
         body { 
-            font-family: -apple-system, sans-serif; 
+            font-family: -apple-system, system-ui, sans-serif; 
             background: var(--bg); 
             display: flex; 
             justify-content: center; 
             padding: 10px; 
             margin: 0; 
-            -webkit-tap-highlight-color: transparent;
-            /* 核心修正：禁止雙擊縮放，但允許正常捲動 */
             touch-action: manipulation; 
             overflow-x: hidden;
         }
@@ -53,7 +50,6 @@
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 15px; }
         .weekday { text-align: center; font-size: 12px; color: #8eb3c5; font-weight: 800; padding-bottom: 8px; }
         
-        /* 修正格點：增加禁止選取屬性，防止長按彈出選單 */
         .day { 
             aspect-ratio: 0.82; display: flex; flex-direction: column; border-radius: 18px; 
             border: 2px solid #f0f7fa; overflow: hidden; background: #fff; cursor: pointer; 
@@ -63,46 +59,56 @@
         .slot { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 900; color: white; }
         
         .is-full-v .slot-am { flex: 1; font-size: 16px; background: var(--v-clr); }
-        .is-full-s .slot-am { flex: 1; font-size: 16px; background: var(--s-clr); color: #0a3d62; }
+        .is-full-s .slot-am { flex: 1; font-size: 16px; background: var(--s-clr); }
         .is-full-v .slot-pm, .is-full-s .slot-pm { display: none; }
 
+
         .salary-card { 
-            position: relative; border-radius: 25px; padding:16px 22px; display: none; margin-top: 15px; 
-            background: var(--card-grad); border: 3.5px solid #74b9ff; 
-            box-shadow: 0 15px 40px rgba(10, 61, 98, 0.3); transition: all 0.4s ease; cursor: pointer; overflow: hidden; 
+            position: relative; border-radius: 22px; padding: 22px 24px; 
+            display: none; margin-top: 15px; 
+            background: var(--card-grad); 
+            border: 1.5px solid rgba(255, 255, 255, 0.3); 
+            box-shadow: 0 12px 30px rgba(10, 61, 98, 0.25); 
+            transition: all 0.4s ease; cursor: pointer; overflow: hidden; 
         }
         .salary-card.show { display: block; animation: slideUp 0.4s ease; }
         
         #salary-title { 
-            font-size: 14px; font-weight: 800; color: #ffffff !important; 
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3); margin-bottom: 2px;
+            font-size: 14px; font-weight: 800; color: rgba(255, 255, 255, 0.95) !important; 
+            letter-spacing: 1px; margin-bottom: 8px;
         }
-        .salary-main { font-size: 30px; font-weight: 900; color: #ffffff !important; }
-        #days-v, #days-v + small, #salaryFormula, .bonus-hint { color: #ffffff !important; font-weight: 800; }
-        #statusBadge { background: rgba(255,255,255,0.25); border: none; border-radius: 12px; padding: 5px 14px; font-size: 11px; font-weight: 900; color: #ffffff !important; }
-
-        .bonus-container { max-height: 0; opacity: 0; transition: all 0.4s ease; margin-top: 0; }
-        .salary-card.active .bonus-container { max-height: 100px; opacity: 1; margin-top: 15px; }
-        .bonus-inner { display: flex; gap: 10px; }
-        .bonus-box { 
-            flex: 1; background: rgba(0, 0, 0, 0.15); padding: 10px; border-radius: 15px; 
-            display: flex; align-items: center; justify-content: space-between; 
-            border: 1px solid rgba(255,255,255,0.15); 
-        }
-        .bonus-box label { font-size: 10px; font-weight: 800; color: #74b9ff !important; }
+        .salary-main { font-size: 24px; font-weight: 900; color: #ffffff !important; letter-spacing: -0.5px; }
         
-        /* 核心修正：字體設為 16px 防止自動縮放，再用 transform 縮小視覺體積 */
+        #days-v { font-size: 18px; font-weight: 800; color: #ffffff !important; }
+        #days-v + small { font-size: 11px; font-weight: 700; color: #ffffff !important; opacity: 0.8; }
+        #salaryFormula { 
+            font-size: 9px; font-weight: 600; color: rgba(255, 255, 255, 0.5) !important; 
+            font-family: 'SF Mono', 'Roboto Mono', monospace; margin-top: 2px;
+        }
+        
+        #statusBadge { 
+            background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.2); 
+            border-radius: 8px; padding: 4px 10px; font-size: 10px; font-weight: 900; color: #ffffff !important; 
+        }
+
+        .bonus-hint { font-size: 11px; font-weight: 800; color: #ffffff !important; opacity: 0.7; }
+        .bonus-container { max-height: 0; opacity: 0; transition: all 0.4s ease; margin-top: 0; }
+        .salary-card.active .bonus-container { max-height: 80px; opacity: 1; margin-top: 18px; }
+        .bonus-inner { display: flex; gap: 10px; }
+        
+        .bonus-box { 
+            flex: 1; background: rgba(0, 0, 0, 0.15); padding: 10px 12px; border-radius: 12px; 
+            display: flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.1); 
+        }
+        .bonus-box label { font-size: 11px; font-weight: 800; color: #74b9ff !important; flex-shrink: 0; }
         .bonus-box input { 
             border: none; background: transparent; color: #ffffff !important; 
-            width: 60px; font-weight: 900; outline: none; text-align: right; 
-            font-size: 16px; 
+            width: 100%; font-weight: 900; outline: none; text-align: right; font-size: 14px; 
         }
 
         .salary-card.is-paid { 
-            background: rgba(255, 255, 255, 0.6) !important; 
-            border: 2px solid var(--s-clr) !important; 
-            box-shadow: 0 8px 20px rgba(0, 206, 201, 0.1) !important;
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            background: #ffffff !important; border: 1.5px solid var(--s-clr) !important; 
+            box-shadow: 0 8px 20px rgba(0, 206, 201, 0.12) !important;
         }
         .salary-card.is-paid :is(#salary-title, .salary-main, #days-v, #days-v + small, #salaryFormula, .bonus-hint, #statusBadge) { 
             color: #009a9a !important; text-shadow: none !important; 
@@ -111,10 +117,10 @@
         .salary-card.is-paid .bonus-box label { color: #009a9a !important; }
         .salary-card.is-paid .bonus-box input { color: #009a9a !important; }
 
+        /* 行政與歷史區 */
         #adminArea { margin-top: 20px; display: none; width: 100%; }
         .admin-section { background: white; border: 2px solid #e1f0f7; border-radius: 25px; padding: 18px; margin-bottom: 15px; width: 100%; }
         .section-title { font-size: 14px; font-weight: 800; color: var(--v-clr); display: block; margin-bottom: 15px; }
-        
         .pending-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #f0f7fa; width: 100%; gap: 10px; }
         .pending-left { display: flex; align-items: baseline; gap: 8px; flex: 1; min-width: 0; }
         .pending-ym { font-size: 15px; font-weight: 800; color: #444; flex-shrink: 0; }
@@ -124,22 +130,12 @@
         .quick-pay-btn { border: none; padding: 8px 14px; border-radius: 12px; font-size: 11px; font-weight: 900; cursor: pointer; transition: 0.3s; }
         .quick-pay-btn.btn-ready { background: var(--v-clr) !important; color: #fff !important; }
         .quick-pay-btn.btn-wait { background: #f0f7fa !important; color: #b2bec3 !important; cursor: not-allowed; }
-
         .config-row { display: flex; gap: 15px; width: 100%; }
         .config-group { flex: 1; display: flex; flex-direction: column; }
         .config-label { font-size: 10px; color: #8eb3c5; font-weight: bold; margin-bottom: 6px; }
-        .config-input { 
-            width: 100%; border: 2px solid #e1f0f7; padding: 12px; border-radius: 15px; 
-            outline: none; font-weight: 800; color: #444; background: #fff; text-align: center; 
-            font-size: 16px; /* 防止縮放 */
-        }
-
+        .config-input { width: 100%; border: 2px solid #e1f0f7; padding: 12px; border-radius: 15px; outline: none; font-weight: 800; color: #444; background: #fff; text-align: center; font-size: 16px; }
         #yearSel, #monthSel { border: 2px solid #e1f0f7; background: white; font-weight: bold; padding: 6px 12px; border-radius: 12px; color: var(--v-clr); outline: none; font-size: 14px; }
-        .note-area { 
-            width: 100%; border: 2px solid #e1f0f7; border-radius: 20px; padding: 15px; 
-            height: 75px; margin-top: 15px; background: #fff; resize: none; outline: none; 
-            font-size: 16px; /* 防止縮放 */
-        }
+        .note-area { width: 100%; border: 2px solid #e1f0f7; border-radius: 20px; padding: 15px; height: 75px; margin-top: 15px; background: #fff; resize: none; outline: none; font-size: 16px; }
         .stats-table { width: 100%; border-collapse: collapse; font-size: 13px; }
         .stats-table td { padding: 15px 0; border-bottom: 1px solid #f0f7fa; font-weight: 800; text-align: center; }
         @keyframes slideUp { from { opacity:0; transform:translateY(15px); } to { opacity:1; transform:translateY(0); } }
@@ -168,19 +164,19 @@
         <div id="calendarGrid" class="calendar-grid"></div>
         
         <div class="salary-card" id="salaryCard" onclick="this.classList.toggle('active')">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div id="salary-title"></div>
                 <button id="statusBadge"></button>
             </div>
             <div style="display:flex; justify-content:space-between; align-items:flex-end;">
-                <div style="display:flex; align-items:baseline; gap:8px;">
-                    <div class="salary-main" id="pay-v" style="font-size:32px; font-weight:900;">$0</div>
-                    <div style="text-align: right;">
-                        <div style="font-weight:900;"><span id="days-v" style="font-size:22px;">0</span> <small>天</small></div>
-                        <div id="salaryFormula" style="font-size:9px;font-weight:bold;"></div>
+                <div style="display:flex; align-items:baseline; gap:12px;">
+                    <div class="salary-main" id="pay-v">$0</div>
+                    <div style="text-align: left;">
+                        <div style="line-height:1.2;"><span id="days-v">0</span> <small>天</small></div>
+                        <div id="salaryFormula"></div>
                     </div>
                 </div>
-                <div class="bonus-hint" style="font-size:10px;">獎金 ▾</div>
+                <div class="bonus-hint">獎金 ▾</div>
             </div>
             <div class="bonus-container" onclick="event.stopPropagation()">
                 <div class="bonus-inner">
@@ -224,7 +220,6 @@
 </div>
 
 <script>
-    /* 核心邏輯不變，僅微調與手機操作相關的部分 */
     const $ = id => document.getElementById(id), KEY = "v_s_v1_purple";
     let Y = $("yearSel"), M = $("monthSel"), pressTimer;
 
@@ -233,33 +228,24 @@
     function fmt(y, m) { return `${y}-${String(m).padStart(2, '0')}`; }
 
     function init() {
-    loadConfig();
-    const now = new Date();
-    const curY = now.getFullYear();
-    const curM = now.getMonth() + 1;
-
-    // 1. 嘗試從 localStorage 讀取上次選取的年月，如果沒有就用目前的
-    let savedY = localStorage.getItem('lastY') || curY;
-    let savedM = localStorage.getItem('lastM') || curM;
-
-    // 2. 初始化年份選單
-    for(let y = curY - 1; y <= curY + 2; y++) Y.add(new Option(y, y));
-    Y.value = savedY;
-
-    // 3. 初始化月份選單
-    const upM = () => {
-        M.innerHTML = "";
-        for(let m = 1; m <= 12; m++) M.add(new Option(m, m));
-        M.value = savedM; // 使用儲存的月份
-    };
-    upM();
-
-    // 4. 當選單改變時，除了渲染還要儲存目前選擇
-    Y.onchange = () => { localStorage.setItem('lastY', Y.value); render(); };
-    M.onchange = () => { localStorage.setItem('lastM', M.value); render(); };
-
-    render();
-}
+        loadConfig();
+        const now = new Date();
+        const curY = now.getFullYear();
+        const curM = now.getMonth() + 1;
+        let savedY = localStorage.getItem('lastY') || curY;
+        let savedM = localStorage.getItem('lastM') || curM;
+        for(let y = curY - 1; y <= curY + 2; y++) Y.add(new Option(y, y));
+        Y.value = savedY;
+        const upM = () => {
+            M.innerHTML = "";
+            for(let m = 1; m <= 12; m++) M.add(new Option(m, m));
+            M.value = savedM;
+        };
+        upM();
+        Y.onchange = () => { localStorage.setItem('lastY', Y.value); render(); };
+        M.onchange = () => { localStorage.setItem('lastM', M.value); render(); };
+        render();
+    }
 
     function switchMode(m) {
         document.querySelectorAll('.mode-btn').forEach((b, i) => b.classList.toggle('active', (i===0 && m==='v') || (i===1 && m==='admin')));
@@ -287,7 +273,6 @@
     function render() {
         let y=Y.value, m=M.value, k=`${KEY}-${y}-${m}`, data=JSON.parse(localStorage.getItem(k))||{};
         let isPd = localStorage.getItem(`pd-${y}-${m}`)==='true', isCf = localStorage.getItem(`cf-${y}-${m}`)==='true';
-        $("vArea").className = isCf ? "is-locked-mode" : "";
         $("lockBtn").style.borderColor = isCf ? "var(--success)" : "#e1f0f7";
         $("lockBtn").style.background = isCf ? "var(--success)" : "white";
         $("lockBtn").querySelector('svg').style.stroke = isCf ? "white" : "#8eb3c5";
@@ -312,7 +297,6 @@
         $("calendarGrid").innerHTML=h; calc();
     }
 
-    // 修正點擊與長按邏輯，增加 touch 事件相容性
     function stP(d){ if(localStorage.getItem(`cf-${Y.value}-${M.value}`)==='true') return; pressTimer=setTimeout(()=>{ let k=`${KEY}-${Y.value}-${M.value}`, data=JSON.parse(localStorage.getItem(k))||{}; data[d]={am:'',pm:'',mode:''}; localStorage.setItem(k, JSON.stringify(data)); render(); }, 600); }
     function edP(d){ clearTimeout(pressTimer); if(pressTimer) hClick(d); pressTimer = null; }
     
@@ -360,7 +344,7 @@
             let v=0, d=JSON.parse(localStorage.getItem(k))||{}; Object.keys(d).forEach(k=>{if(d[k].am==='v')v+=0.5; if(d[k].pm==='v')v+=0.5;});
             let bv=parseFloat(localStorage.getItem(`bv-${y}-${m}`))||0;
             let mt = Math.round(v * (baseA/30)) + bv;
-            if(mt>0) { 
+            if(items.length || mt > 0) { 
                 items.push(`· ${fmt(y,m)}: $${mt.toLocaleString()} (${v}天${bv>0?`+獎金$${bv}`:''})`); 
                 total+=mt; 
             }
