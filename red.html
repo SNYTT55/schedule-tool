@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>班表 V1.9.0 財務嚴謹版</title>
+    <style>
+        :root { 
+            --v-clr: #d63031; --s-clr: #f1c40f; --bg: #fff5f5; 
+            --danger: #ff7675; --success: #2ecc71; 
+            --gold-grad: linear-gradient(135deg, #f1c40f 0%, #fff 50%, #dab00c 100%);
+            --card-grad: radial-gradient(circle at center, #e04f5f 0%, #b32424 70%, #991a1a 100%);
+        }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 10px; margin: 0; -webkit-tap-highlight-color: transparent; }
+        .container { 
+            background: white; padding: 25px 15px; border-radius: 40px; 
+            box-shadow: 0 20px 50px rgba(214, 48, 49, 0.1); width: 100%; max-width: 480px; 
+            box-sizing: border-box; position: relative; border: 3px solid #fdf2f2;
+        }
+        .container::before { 
+            content: "福"; position: absolute; top: -18px; left: 50%; transform: translateX(-50%); 
+            background: var(--v-clr); color: white; width: 36px; height: 36px; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; 
+            box-shadow: 0 6px 12px rgba(179, 36, 36, 0.3); border: 2px solid white; z-index: 10;
+        }
+        
+        .mode-switcher { background: #fdf2f2; border-radius: 20px; display: flex; padding: 5px; margin-bottom: 20px; }
+        .mode-btn { flex: 1; border: none; padding: 12px; border-radius: 15px; font-size: 14px; font-weight: bold; cursor: pointer; transition: 0.3s; color: #a55c5c; background: transparent; }
+        .mode-btn.active { background: white; color: var(--v-clr); box-shadow: 0 4px 15px rgba(214, 48, 49, 0.1); }
+
+        .legend-area { display: flex; flex-direction: column; gap: 2px; }
+        .legend-staff { display: flex; gap: 15px; font-size: 14px; font-weight: 800; color: #444; }
+        .dot { width: 12px; height: 12px; border-radius: 4px; display: inline-block; margin-right: 6px; vertical-align: middle; }
+        .v-bg { background: var(--v-clr); } .s-bg { background: var(--s-clr); }
+        .time-label { font-size: 10px; color: #e2a0a0; font-weight: bold; }
+
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 15px; }
+        .weekday { text-align: center; font-size: 12px; color: #e2a0a0; font-weight: 800; padding-bottom: 8px; }
+        .day { aspect-ratio: 0.7; display: flex; flex-direction: column; border-radius: 15px; border: 2px solid #fff5f5; overflow: hidden; position: relative; background: #fff; cursor: pointer; }
+        .date-num { font-size: 11px; padding: 5px; color: #e2a0a0; font-weight: bold; position: absolute; z-index: 2; }
+        .slot { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 900; color: white; }
+        
+        .is-locked-mode .calendar-grid { gap: 4px; margin-bottom: 8px; }
+        .is-locked-mode .day { aspect-ratio: 1.2; border-radius: 10px; }
+        .is-full-v .slot-am { flex: 1; font-size: 15px; background: var(--v-clr); }
+        .is-full-s .slot-am { flex: 1; font-size: 15px; background: var(--s-clr); color: #8a6d07; }
+        .is-full-v .slot-pm, .is-full-s .slot-pm { display: none; }
+
+        /* --- 薪資卡核心 --- */
+        .salary-card { 
+            position: relative; border-radius: 30px; padding: 22px; 
+            display: none; margin-top: 15px; background: var(--card-grad); 
+            border: 3.5px solid #dab00c; box-shadow: 0 15px 40px rgba(179, 36, 36, 0.3);
+            transition: all 0.3s ease; cursor: pointer;
+        }
+        .salary-card.show { display: block; animation: slideUp 0.4s ease; }
+
+        /* 結清透明樣式 */
+        .salary-card.is-paid { 
+            background: rgba(255, 255, 255, 0.3) !important; 
+            border: 1.5px solid rgba(165, 92, 92, 0.2) !important;
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+        }
+        .salary-card.is-paid :is(#salary-title, .salary-main, #days-v, small, label, #salaryFormula, .bonus-hint) {
+            color: #a55c5c !important; text-shadow: none !important;
+        }
+
+        .salary-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .salary-main-row { display: flex; justify-content: space-between; align-items: flex-end; }
+        .salary-main { font-size: 42px; font-weight: 900; color: #f1c40f; text-shadow: 0 3px 6px rgba(0,0,0,0.3); line-height: 1; }
+        
+        #salaryFormula { font-size: 9px; color: rgba(255,255,255,0.4); font-weight: bold; margin-top: 2px; }
+
+        /* 獎金框折疊 */
+        .bonus-container { 
+            display: grid; grid-template-rows: 0fr; opacity: 0; 
+            transition: grid-template-rows 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
+        }
+        .salary-card.active .bonus-container { 
+            grid-template-rows: 1fr; opacity: 1; margin-top: 15px; 
+        }
+        .bonus-inner { overflow: hidden; display: flex; gap: 8px; }
+        .bonus-box { flex: 1; background: rgba(0, 0, 0, 0.2); padding: 8px 10px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; }
+        .bonus-box label { font-size: 9px; color: rgba(255,255,255,0.6); }
+        .bonus-box input { border: none; background: transparent; color: #fff; width: 55px; font-weight: 900; outline: none; text-align: right; }
+        /* 唯讀狀態樣式 */
+        .bonus-box input:disabled { color: rgba(255,255,255,0.3); cursor: not-allowed; }
+        .bonus-hint { font-size: 9px; color: rgba(255,255,255,0.3); }
+
+        #salary-title { font-size: 11px; color: rgba(255,255,255,0.7); font-weight: 800; font-family: monospace; }
+        #statusBadge {
+            background: var(--gold-grad); border: none; border-radius: 8px; 
+            padding: 4px 12px; font-size: 10px; font-weight: 900; color: #8a6d07; box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+
+        /* 備註與明細 */
+        #adminArea { margin-top: 20px; display: none; }
+        .admin-section { background: white; border: 2px solid #fdf2f2; border-radius: 25px; padding: 20px; margin-bottom: 15px; }
+        .section-title { font-size: 14px; font-weight: 800; color: #d63031; display: block; margin-bottom: 10px; }
+        .config-input { width: 100%; border: 2px solid #fdf2f2; padding: 10px; border-radius: 12px; outline: none; font-weight: 800; color: #444; margin-top: 5px; box-sizing: border-box; }
+        .pending-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #fff5f5; }
+        .pending-info { display: flex; flex-direction: column; }
+        .pending-ym { font-size: 15px; font-weight: 800; color: #444; }
+        .pending-formula { font-size: 10px; color: #bbb; }
+        .pending-amount { font-size: 17px; font-weight: 900; color: var(--v-clr); margin-right: 10px; }
+        .quick-pay-btn { border: none; padding: 8px 15px; border-radius: 12px; font-size: 11px; font-weight: bold; cursor: pointer; }
+
+        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .lock-btn { width: 38px; height: 38px; border-radius: 50%; border: 2px solid #fdf2f2; background: white; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .lock-btn.active { border-color: var(--success); background: var(--success); }
+        .lock-btn svg { width: 20px; height: 20px; fill: none; stroke: #e2a0a0; stroke-width: 3.5; }
+        .lock-btn.active svg { stroke: white; }
+        #yearSel, #monthSel { border: 2px solid #fdf2f2; background: white; font-weight: bold; padding: 5px 10px; border-radius: 10px; color: var(--v-clr); outline: none; }
+        .note-area { width: 100%; border: 2px solid #fdf2f2; border-radius: 20px; padding: 15px; font-size: 14px; height: 70px; margin-top: 15px; box-sizing: border-box; background: #fff; resize: none; outline: none; }
+        .stats-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+        .stats-table th { padding: 12px 0; color: #e2a0a0; border-bottom: 2px solid #fdf2f2; }
+        .stats-table td { padding: 18px 0; border-bottom: 1px solid #fff5f5; font-weight: 800; text-align: center; }
+        @keyframes slideUp { from { opacity:0; transform:translateY(15px); } to { opacity:1; transform:translateY(0); } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="mode-switcher">
+        <button class="mode-btn active" onclick="switchMode('v')">排班模式</button>
+        <button class="mode-btn" onclick="switchMode('admin')">數據統計</button>
+    </div>
+    
+    <div id="vArea">
+        <div class="toolbar">
+            <div class="legend-area">
+                <div class="legend-staff">
+                    <div><span class="dot v-bg"></span>V</div>
+                    <div><span class="dot s-bg"></span>S</div>
+                </div>
+                <div class="time-label">14:30-18:30 / 18:30-23:00</div>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button id="lockBtn" class="lock-btn" onclick="toggleConfirm()"><svg viewBox="0 0 24 24"><path d="M20 6L9 17L4 12"></path></svg></button>
+                <select id="yearSel"></select><select id="monthSel"></select>
+            </div>
+        </div>
+        <div id="calendarGrid" class="calendar-grid"></div>
+        
+        <div class="salary-card" id="salaryCard" onclick="this.classList.toggle('active')">
+            <div class="salary-top-row">
+                <div id="salary-title"></div>
+                <button id="statusBadge"></button>
+            </div>
+            
+            <div class="salary-main-row">
+                <div style="display:flex; align-items:baseline; gap:8px;">
+                    <div class="salary-main" id="pay-v">$0</div>
+                    <div style="text-align: right;">
+                        <div style="color:#fff; font-weight:900;"><span id="days-v" style="font-size:22px;">0</span> <small>天</small></div>
+                        <div id="salaryFormula"></div>
+                    </div>
+                </div>
+                <div class="bonus-hint">獎金 ▾</div>
+            </div>
+
+            <div class="bonus-container" onclick="event.stopPropagation()">
+                <div class="bonus-inner">
+                    <div class="bonus-box"><label>月獎金</label><input type="number" id="bt_main" oninput="syncBonus()" placeholder="0"></div>
+                    <div class="bonus-box"><label>V獎金</label><input type="number" id="bv_main" oninput="syncBonus()" placeholder="0"></div>
+                </div>
+            </div>
+        </div>
+        <textarea id="monthNote" class="note-area" placeholder="當月備註..."></textarea>
+    </div>
+
+    <div id="adminArea">
+        <div class="admin-section">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <span class="section-title">📌 未發放明細 <span id="pendingTotal" style="color:var(--v-clr);">$0</span></span>
+                <button id="copyFinalBtn" style="background:#444; color:white; border:none; padding:6px 14px; border-radius:12px; font-size:11px; font-weight:bold; cursor:pointer;">複製明細</button>
+            </div>
+            <div id="pendingList"></div>
+        </div>
+        <div class="admin-section">
+            <span class="section-title">📊 歷史數據</span>
+            <table class="stats-table">
+                <thead><tr><th>月份</th><th>V</th><th>S</th></tr></thead>
+                <tbody id="statsRecordBody"></tbody>
+            </table>
+        </div>
+        <div class="admin-section">
+            <span class="section-title">⚙️ 參數設定 </span>
+            <div style="display:flex; gap:12px;">
+                <div style="flex:1;"><label style="font-size:10px; color:#aaa;">參數 A </label><input type="number" id="baseA" class="config-input" oninput="saveConfig()"></div>
+                <div style="flex:1;"><label style="font-size:10px; color:#aaa;">參數 B </label><input type="number" id="baseB" class="config-input" oninput="saveConfig()"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const $ = id => document.getElementById(id), KEY = "v_s_v1_purple";
+    let Y = $("yearSel"), M = $("monthSel"), pressTimer;
+
+    function saveConfig() { localStorage.setItem("confA", $("baseA").value); localStorage.setItem("confB", $("baseB").value); calc(); }
+    function loadConfig() { $("baseA").value = localStorage.getItem("confA") || 1900; $("baseB").value = localStorage.getItem("confB") || 1800; }
+    function fmt(y, m) { return `${y}-${String(m).padStart(2, '0')}`; }
+
+    function init() {
+        loadConfig();
+        const curY = new Date().getFullYear();
+        for(let y = curY - 1; y <= curY + 2; y++) Y.add(new Option(y, y));
+        const upM = () => { let cur = M.value||(new Date().getMonth() + 1); M.innerHTML=""; for(let m=1;m<=12;m++) M.add(new Option(m, m)); M.value=cur; };
+        Y.value = curY; upM();
+        Y.onchange = render; M.onchange = render; render();
+    }
+
+    function switchMode(m) {
+        document.querySelectorAll('.mode-btn').forEach((b, i) => b.classList.toggle('active', (i===0 && m==='v') || (i===1 && m==='admin')));
+        $("vArea").style.display = (m === 'v' ? 'block' : 'none');
+        $("adminArea").style.display = (m === 'admin' ? 'block' : 'none');
+        if(m==='admin') calc();
+    }
+
+    function toggleConfirm() {
+        let y=Y.value, m=M.value;
+        if(localStorage.getItem(`pd-${y}-${m}`)==='true') return;
+        let cur = localStorage.getItem(`cf-${y}-${m}`) === 'true';
+        let nextStatus = !cur;
+        localStorage.setItem(`cf-${y}-${m}`, nextStatus);
+        if(nextStatus) { localStorage.setItem(`lockA-${y}-${m}`, $("baseA").value); localStorage.setItem(`lockB-${y}-${m}`, $("baseB").value); }
+        render();
+    }
+
+    function quickPay(y, m) {
+        if(localStorage.getItem(`cf-${y}-${m}`) !== 'true') return alert("請先確認排班！");
+        localStorage.setItem(`pd-${y}-${m}`, 'true');
+        render();
+    }
+
+    function render() {
+        let y=Y.value, m=M.value, k=`${KEY}-${y}-${m}`, data=JSON.parse(localStorage.getItem(k))||{};
+        let isPd = localStorage.getItem(`pd-${y}-${m}`)==='true', isCf = localStorage.getItem(`cf-${y}-${m}`)==='true';
+        
+        $("vArea").className = isCf ? "is-locked-mode" : "";
+        $("lockBtn").classList.toggle('active', isCf);
+        $("salaryCard").className = `salary-card ${isCf?'show':''} ${isPd?'is-paid':''}`;
+        $("statusBadge").innerText = isPd ? "已結清" : "待發放";
+        $("salary-title").innerText = `${fmt(y, m)} SETTLEMENT`;
+        
+        // 核心邏輯：結清後禁用獎金輸入
+        $("bt_main").value = localStorage.getItem(`bt-${y}-${m}`)||"";
+        $("bv_main").value = localStorage.getItem(`bv-${y}-${m}`)||"";
+        $("bt_main").disabled = isPd;
+        $("bv_main").disabled = isPd;
+        
+        $("monthNote").value = localStorage.getItem(`nt-${y}-${m}`)||"";
+        let fD=new Date(y, m-1, 1).getDay(), dIM=new Date(y, m, 0).getDate();
+        let h = ['SUN','MON','TUE','WED','THU','FRI','SAT'].map(w=>`<div class="weekday">${w}</div>`).join('');
+        for(let i=0;i<fD;i++) h+='<div class="day empty"></div>';
+        for(let d=1; d<=dIM; d++) {
+            let o=data[d]||{am:'',pm:'',mode:''}, cls = (o.mode==='full-v'?'is-full-v':(o.mode==='full-s'?'is-full-s':''));
+            h+=`<div class="day ${cls} ${isCf?'locked':''}" onmousedown="stP(${d})" onmouseup="edP(${d})" ontouchstart="stP(${d})" ontouchend="edP(${d})">
+                <div class="date-num">${d}</div><div style="flex:1; display:flex; flex-direction:column; width:100%;">
+                <div class="slot slot-am ${o.am?o.am+'-bg':''}">${o.am.toUpperCase()}</div>
+                <div class="slot slot-pm ${o.pm?o.pm+'-bg':''}">${o.pm.toUpperCase()}</div>
+                </div></div>`;
+        }
+        $("calendarGrid").innerHTML=h; calc();
+    }
+
+    function stP(d){ if(localStorage.getItem(`cf-${Y.value}-${M.value}`)==='true') return; pressTimer=setTimeout(()=>{ let k=`${KEY}-${Y.value}-${M.value}`, data=JSON.parse(localStorage.getItem(k))||{}; data[d]={am:'',pm:'',mode:''}; localStorage.setItem(k, JSON.stringify(data)); render(); }, 600); }
+    function edP(d){ clearTimeout(pressTimer); if(pressTimer) hClick(d); }
+    function hClick(d){
+        if(localStorage.getItem(`cf-${Y.value}-${M.value}`)==='true') return;
+        let k=`${KEY}-${Y.value}-${M.value}`, data=JSON.parse(localStorage.getItem(k))||{};
+        let ms=['','full-v','full-s','s-am-v-pm','v-am-s-pm'], cur=data[d]?.mode||'', n=ms[(ms.indexOf(cur)+1)%ms.length];
+        let map={'':{am:'',pm:'',mode:''}, 'full-v':{am:'v',pm:'v',mode:'full-v'}, 's-am-v-pm':{am:'s',pm:'v',mode:'s-am-v-pm'}, 'v-am-s-pm':{am:'v',pm:'s',mode:'v-am-s-pm'}, 'full-s':{am:'s',pm:'s',mode:'full-s'}};
+        data[d]=map[n]; localStorage.setItem(k, JSON.stringify(data)); render();
+    }
+
+    function syncBonus() { 
+        if(localStorage.getItem(`pd-${Y.value}-${M.value}`)==='true') return; // 已結清則不存檔
+        localStorage.setItem(`bt-${Y.value}-${M.value}`, $("bt_main").value); 
+        localStorage.setItem(`bv-${Y.value}-${M.value}`, $("bv_main").value); 
+        calc(); 
+    }
+
+    function calc() {
+        let globalA = parseFloat($("baseA").value)||1900, globalB = parseFloat($("baseB").value)||1800;
+        let pool=0, sH="", pL="";
+        const allKeys = Object.keys(localStorage).filter(k => k.startsWith(KEY + "-")).sort();
+        allKeys.forEach(key => {
+            let [y, m] = key.replace(KEY + "-", "").split('-').map(Number);
+            let d=JSON.parse(localStorage.getItem(key))||{}, v=0;
+            Object.keys(d).forEach(k=>{ if(d[k].am==='v')v+=0.5; if(d[k].pm==='v')v+=0.5; });
+            let isPd = localStorage.getItem(`pd-${y}-${m}`)==='true', isCf = localStorage.getItem(`cf-${y}-${m}`)==='true';
+            let hA = (isCf || isPd) ? (parseFloat(localStorage.getItem(`lockA-${y}-${m}`))||globalA) : globalA;
+            let mbv = parseFloat(localStorage.getItem(`bv-${y}-${m}`))||0, mbt = parseFloat(localStorage.getItem(`bt-${y}-${m}`))||0;
+            let mvb = Math.round(v * (hA/30)), vt = mvb + mbv;
+            if(!isPd && vt > 0){ 
+                pool += vt;
+                pL += `<div class="pending-item"><div class="pending-info"><span class="pending-ym">${fmt(y,m)}</span><span class="pending-formula">(${hA}/30)×${v}</span></div><div style="display:flex;align-items:center;"><span class="pending-amount">$${vt.toLocaleString()}</span><button class="quick-pay-btn" style="background:${isCf?'var(--success)':'#eee'};color:${isCf?'#fff':'#ccc'};" onclick="quickPay(${y},${m})">${isCf?'結清':'待確認'}</button></div></div>`; 
+            }
+            sH += `<tr><td>${isPd?'✅':'⏳'} ${fmt(y, m)}</td><td style="color:var(--v-clr)">$${vt.toLocaleString()}</td><td style="color:var(--s-clr)">$${((hA+globalB)-mvb+(mbt-mbv)).toLocaleString()}</td></tr>`;
+            if(y == Y.value && m == M.value) { $("pay-v").innerText=`$${vt.toLocaleString()}`; $("days-v").innerText=v; $("salaryFormula").innerText=`(${hA}/30)×${v}${mbv>0?`+${mbv}`:''}`; }
+        });
+        $("pendingTotal").innerText=`$${pool.toLocaleString()}`; $("pendingList").innerHTML=pL||'<div style="text-align:center;padding:20px 0;color:#ccc;font-size:12px;">無待領項目</div>'; $("statsRecordBody").innerHTML=sH;
+    }
+
+    // 強化版：複製明細邏輯
+    $("copyFinalBtn").onclick = () => {
+        let items=[], total=0;
+        Object.keys(localStorage).filter(k => k.startsWith(KEY + "-")).sort().forEach(k => {
+            let [y, m] = k.replace(KEY + "-", "").split('-').map(Number);
+            if(localStorage.getItem(`pd-${y}-${m}`)==='true' || localStorage.getItem(`cf-${y}-${m}`)!=='true') return;
+            let baseA = parseFloat(localStorage.getItem(`lockA-${y}-${m}`)) || parseFloat($("baseA").value) || 1900;
+            let v=0, d=JSON.parse(localStorage.getItem(k))||{}; Object.keys(d).forEach(k=>{if(d[k].am==='v')v+=0.5; if(d[k].pm==='v')v+=0.5;});
+            let bv=parseFloat(localStorage.getItem(`bv-${y}-${m}`))||0, mt = Math.round(v * (baseA/30)) + bv;
+            if(mt>0) { 
+                let bonusStr = bv > 0 ? ` + V獎金$${bv.toLocaleString()}` : "";
+                items.push(`· ${fmt(y,m)}: $${mt.toLocaleString()} (${v}天${bonusStr})`); 
+                total+=mt; 
+            }
+        });
+        if(items.length){ 
+            let txt=`未結算明細\n----------\n${items.join('\n')}\n----------\n總計: $${total.toLocaleString()}`; 
+            let el=document.createElement('textarea'); el.value=txt; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); 
+            alert("明細已複製！"); 
+        }
+    };
+    init(); 
+    $("monthNote").oninput=()=>{localStorage.setItem(`nt-${Y.value}-${M.value}`,$("monthNote").value);};
+</script>
+</body>
+</html>
