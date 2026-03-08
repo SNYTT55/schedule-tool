@@ -176,7 +176,7 @@
                         <div id="salaryFormula"></div>
                     </div>
                 </div>
-                <div class="bonus-hint">獎金 ▾</div>
+                <div class="bonus-hint">🐚🐚🐚▾</div>
             </div>
             <div class="bonus-container" onclick="event.stopPropagation()">
                 <div class="bonus-inner">
@@ -197,7 +197,7 @@
             <div id="pendingList"></div>
         </div>
         <div class="admin-section">
-            <span class="section-title">📊 歷史航道</span>
+            <span class="section-title">📊 歷史紀錄</span>
             <table class="stats-table">
                 <thead><tr><th style="color:#8eb3c5;padding-bottom:10px;">月份</th><th style="color:#8eb3c5;padding-bottom:10px;">V</th><th style="color:#8eb3c5;padding-bottom:10px;">S</th></tr></thead>
                 <tbody id="statsRecordBody"></tbody>
@@ -297,15 +297,75 @@
         $("calendarGrid").innerHTML=h; calc();
     }
 
-    function stP(d){ if(localStorage.getItem(`cf-${Y.value}-${M.value}`)==='true') return; pressTimer=setTimeout(()=>{ let k=`${KEY}-${Y.value}-${M.value}`, data=JSON.parse(localStorage.getItem(k))||{}; data[d]={am:'',pm:'',mode:''}; localStorage.setItem(k, JSON.stringify(data)); render(); }, 600); }
-    function edP(d){ clearTimeout(pressTimer); if(pressTimer) hClick(d); pressTimer = null; }
+    function stP(d){ 
+        if(localStorage.getItem(`cf-${Y.value}-${M.value}`)==='true') return;
+        
+        // 1. 清除上一個可能殘留的計時器
+        clearTimeout(pressTimer); 
+        
+        // 2. 第一層計時：0.6秒刪除該格 (Short Long Press)
+        pressTimer = setTimeout(() => { 
+            let k=`${KEY}-${Y.value}-${M.value}`, data=JSON.parse(localStorage.getItem(k))||{};
+            delete data[d]; 
+            localStorage.setItem(k, JSON.stringify(data));
+            render();
+            
+            // 3. 第二層計時：總共 1.5秒則執行整月清空 (Super Long Press)
+            pressTimer = setTimeout(() => {
+                localStorage.removeItem(k);
+                // 同時清空相關加碼資料，確保徹底重排
+                localStorage.removeItem(`bv-${Y.value}-${M.value}`);
+                localStorage.removeItem(`bt-${Y.value}-${M.value}`);
+                pressTimer = null; // 清空指針，避免 edP 再次觸發 hClick
+                render();
+            }, 900); 
+
+        }, 600); 
+    }
+
+    function edP(d){ 
+        // 只有當 pressTimer 還存在時，代表這是一個「短點擊」
+        if (pressTimer) {
+            clearTimeout(pressTimer);
+            pressTimer = null; 
+            hClick(d); // 執行切換班表
+        }
+    }
+    
+    function hClick(d){
+        // 安全檢查：若已鎖定則不動作
+        if(localStorage.getItem(`cf-${Y.value}-${M.value}`)==='true') return;
+        
+        let k=`${KEY}-${Y.value}-${M.value}`, data=JSON.parse(localStorage.getItem(k))||{};
+        let ms=['','full-v','full-s','s-am-v-pm','v-am-s-pm'], cur=data[d]?.mode||'', n=ms[(ms.indexOf(cur)+1)%ms.length];
+        let map={'':{am:'',pm:'',mode:''}, 'full-v':{am:'v',pm:'v',mode:'full-v'}, 's-am-v-pm':{am:'s',pm:'v',mode:'s-am-v-pm'}, 'v-am-s-pm':{am:'v',pm:'s',mode:'v-am-s-pm'}, 'full-s':{am:'s',pm:'s',mode:'full-s'}};
+        
+        // 修改點：如果狀態是空白，直接刪除該屬性，維持資料乾淨
+        if (n === '') { delete data[d]; } else { data[d]=map[n]; }
+
+        // 修改點：如果整個物件空了，直接移除 localStorage 的 key
+        if (Object.keys(data).length === 0) {
+            localStorage.removeItem(k);
+        } else {
+            localStorage.setItem(k, JSON.stringify(data));
+        }
+        render();
+    }
     
     function hClick(d){
         if(localStorage.getItem(`cf-${Y.value}-${M.value}`)==='true') return;
         let k=`${KEY}-${Y.value}-${M.value}`, data=JSON.parse(localStorage.getItem(k))||{};
         let ms=['','full-v','full-s','s-am-v-pm','v-am-s-pm'], cur=data[d]?.mode||'', n=ms[(ms.indexOf(cur)+1)%ms.length];
         let map={'':{am:'',pm:'',mode:''}, 'full-v':{am:'v',pm:'v',mode:'full-v'}, 's-am-v-pm':{am:'s',pm:'v',mode:'s-am-v-pm'}, 'v-am-s-pm':{am:'v',pm:'s',mode:'v-am-s-pm'}, 'full-s':{am:'s',pm:'s',mode:'full-s'}};
-        data[d]=map[n]; localStorage.setItem(k, JSON.stringify(data)); render();
+        
+        if (n === '') { delete data[d]; } else { data[d]=map[n]; }
+
+        if (Object.keys(data).length === 0) {
+            localStorage.removeItem(k);
+        } else {
+            localStorage.setItem(k, JSON.stringify(data));
+        }
+        render();
     }
 
     function syncBonus() { if(localStorage.getItem(`pd-${Y.value}-${M.value}`)==='true') return; localStorage.setItem(`bt-${Y.value}-${M.value}`, $("bt_main").value); localStorage.setItem(`bv-${Y.value}-${M.value}`, $("bv_main").value); calc(); }
@@ -313,26 +373,37 @@
     function calc() {
         let globalA = parseFloat($("baseA").value)||1900, globalB = parseFloat($("baseB").value)||1800;
         let pool=0, sH="", pL="";
+        const now = new Date();
+        const currentYM = now.getFullYear() * 12 + (now.getMonth() + 1);
+
         const allKeys = Object.keys(localStorage).filter(k => k.startsWith(KEY + "-")).sort();
         allKeys.forEach(key => {
             let [y, m] = key.replace(KEY + "-", "").split('-').map(Number);
+            let targetYM = y * 12 + m;
             let d=JSON.parse(localStorage.getItem(key))||{}, v=0;
             Object.keys(d).forEach(k=>{ if(d[k].am==='v')v+=0.5; if(d[k].pm==='v')v+=0.5; });
+            
             let isPd = localStorage.getItem(`pd-${y}-${m}`)==='true', isCf = localStorage.getItem(`cf-${y}-${m}`)==='true';
+            
+            if (targetYM > currentYM && !isPd && !isCf) return;
+            let mbv = parseFloat(localStorage.getItem(`bv-${y}-${m}`)) || 0;
+            if (v === 0 && mbv === 0 && !isPd) return;
+
             let hA = (isCf || isPd) ? (parseFloat(localStorage.getItem(`lockA-${y}-${m}`))||globalA) : globalA;
-            let mbv = parseFloat(localStorage.getItem(`bv-${y}-${m}`))||0, mbt = parseFloat(localStorage.getItem(`bt-${y}-${m}`))||0;
+            let mbt = parseFloat(localStorage.getItem(`bt-${y}-${m}`))||0;
             let mvb = Math.round(v * (hA/30)), vt = mvb + mbv;
+            
             if(!isPd && vt > 0){ 
                 pool += vt;
                 pL += `<div class="pending-item">
-                        <div class="pending-left"><span class="pending-ym">${fmt(y,m)}</span><span class="pending-formula">(${hA}/30)×${v}${mbv>0?`+${mbv}`:''}</span></div>
-                        <div class="pending-right"><span class="pending-amount">$${vt.toLocaleString()}</span><button class="quick-pay-btn ${isCf?'btn-ready':'btn-wait'}" onclick="quickPay(${y},${m})">${isCf?'結清':'待領'}</button></div>
-                       </div>`; 
+                        <div class="pending-left"><span class="pending-ym">${fmt(y,m)} </span><span class="pending-formula">(${hA}/30)×${v}${mbv>0?`+${mbv}`:''}</span></div>
+                        <div class="pending-right"><span class="pending-amount">$${vt.toLocaleString()}</span><button class="quick-pay-btn ${isCf?'btn-ready':'btn-wait'}" onclick="quickPay(${y},${m})">${isCf?'領取':'待領'}</button></div>
+                       </div>`;
             }
-            sH += `<tr><td>${isPd?'✅':'⏳'} ${fmt(y, m)}</td><td style="color:var(--v-clr)">$${vt.toLocaleString()}</td><td style="color:var(--s-clr)">$${((hA+globalB)-mvb+(mbt-mbv)).toLocaleString()}</td></tr>`;
+            sH += `<tr><td>${isPd?'✅ ':'⏳ '} ${fmt(y, m)}</td><td style="color:var(--v-clr)">$${vt.toLocaleString()}</td><td style="color:var(--s-clr)">$${((hA+globalB)-mvb+(mbt-mbv)).toLocaleString()}</td></tr>`;
             if(y == Y.value && m == M.value) { $("pay-v").innerText=`$${vt.toLocaleString()}`; $("days-v").innerText=v; $("salaryFormula").innerText=`(${hA}/30)×${v}${mbv>0?`+${mbv}`:''}`; }
         });
-        $("pendingTotal").innerText=`$${pool.toLocaleString()}`; $("pendingList").innerHTML=pL||'<div style="text-align:center;padding:20px 0;color:#ccc;font-size:12px;">無待領項目</div>'; $("statsRecordBody").innerHTML=sH;
+        $("pendingTotal").innerText=`$${pool.toLocaleString()}`; $("pendingList").innerHTML=pL||'<div style="text-align:center;padding:20px 0;color:#0984e3;font-size:12px;opacity:0.6;">目前無待領項目</div>'; $("statsRecordBody").innerHTML=sH;
     }
 
     $("copyFinalBtn").onclick = () => {
