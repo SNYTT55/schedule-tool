@@ -109,8 +109,17 @@
         .pending-ym { font-size: 15px; font-weight: 800; color: #444; }
         .pending-formula { font-size: 10px; color: #bbb; }
         .pending-amount { font-size: 17px; font-weight: 900; color: var(--v-clr); margin-right: 10px; }
-        .quick-pay-btn { border: none; padding: 8px 15px; border-radius: 12px; font-size: 11px; font-weight: bold; cursor: pointer; }
+        .quick-pay-btn { border: none; padding: 6px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; cursor: pointer; }
 
+        .btn-ready { background: var(--v-clr); /* 可領取時：主題紅 */    color: white; 
+}
+
+.btn-wait { 
+    background: #fdf2f2;      /* 待領時：淡粉色 */
+    color: #e2a0a0; 
+    cursor: not-allowed;      /* 顯示禁止符號 */
+}
+        
         .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .lock-btn { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #fdf2f2; background: white; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .lock-btn.active { border-color: var(--success); background: var(--success); }
@@ -178,7 +187,7 @@
         <div class="admin-section">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                 <span class="section-title">📌 未發放明細 <span id="pendingTotal" style="color:var(--v-clr);">$0</span></span>
-                <button id="copyFinalBtn" style="background:#444; color:white; border:none; padding:6px 14px; border-radius:12px; font-size:11px; font-weight:bold; cursor:pointer;">複製明細</button>
+                <button id="copyFinalBtn" style="background: #a55c5c; color: white; border: none; padding: 6px 14px; border-radius: 12px; font-size: 11px;  font-weight: bold;  cursor: pointer;;">複製</button>
             </div>
             <div id="pendingList"></div>
         </div>
