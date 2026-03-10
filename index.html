@@ -376,7 +376,9 @@ let isHide = (globalA === 0);;
                 pL += `<div class="pending-item">
         <div style="flex:1;">
             <span style="font-weight:bold;">${fmt(y,m)}</span>
-            <small style="color:#74b9ff"> ${isHide ? '[ DATA LOCKED ]' : `(${hA}/30)×${v}${mbv>0?`+${mbv}`:''}`}</small>
+            <small style="color: #74b9ff; font-size: 10px; letter-spacing: 0.1em; opacity: 0.7;"> 
+    ${isHide ? ' [ LOCKED ]' : `(${hA}/30)×${v}${mbv>0?`+${mbv}`:''}`}
+</small>
         </div>
         <div style="display:flex; align-items:center; gap:15px;">
             <span class="pending-amount">$${isHide ? '--' : vt.toLocaleString()}</span>
