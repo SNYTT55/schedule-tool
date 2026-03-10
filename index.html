@@ -345,7 +345,9 @@
     function syncBonus() { if(localStorage.getItem(`pd-${Y.value}-${M.value}`)==='true') return; localStorage.setItem(`bt-${Y.value}-${M.value}`, $("bt_main").value); localStorage.setItem(`bv-${Y.value}-${M.value}`, $("bv_main").value); calc(); }
 
     function calc() {
-        let globalA = parseFloat($("baseA").value)||1900, globalB = parseFloat($("baseB").value)||1800;
+        let globalA = parseFloat($("baseA").value)||0, globalB = parseFloat($("baseB").value)||0;
+// 如果 globalA 是 0，就代表是隱私模式
+let isHide = (globalA === 0);;
         let pool=0, sH="", pL="";
         const now = new Date();
         const currentYM = now.getFullYear() * 12 + (now.getMonth() + 1);
@@ -372,11 +374,16 @@
                 pool += vt;
                 pL += `<div class="pending-item">
                         <div class="pending-left"><span class="pending-ym">${fmt(y,m)} </span><span class="pending-formula">(${hA}/30)×${v}${mbv>0?`+${mbv}`:''}</span></div>
-                        <div class="pending-right"><span class="pending-amount">$${vt.toLocaleString()}</span><button class="quick-pay-btn ${isCf?'btn-ready':'btn-wait'}" onclick="quickPay(${y},${m})">${isCf?'領取':'待領'}</button></div>
+                        <div class="pending-right"><span class="pending-amount">$${isHide ? '--' : vt.toLocaleString()}</span><button class="quick-pay-btn ${isCf?'btn-ready':'btn-wait'}" onclick="quickPay(${y},${m})">${isCf?'領取':'待領'}</button></div>
                        </div>`;
             }
-            sH += `<tr><td>${isPd?'✅ ':'⏳ '} ${fmt(y, m)}</td><td style="color:var(--v-clr)">$${vt.toLocaleString()}</td><td style="color:var(--s-clr)">$${((hA+globalB)-mvb+(mbt-mbv)).toLocaleString()}</td></tr>`;
-            if(y == Y.value && m == M.value) { $("pay-v").innerText=`$${vt.toLocaleString()}`; $("days-v").innerText=v; $("salaryFormula").innerText=`(${hA}/30)×${v}${mbv>0?`+${mbv}`:''}`; }
+            sH += `<tr><td>${isPd?'✅ ':'⏳ '} ${fmt(y, m)}</td><td style="color:var(--v-clr)">$${isHide ? '--' : vt.toLocaleString()}</td><td style="color:var(--s-clr)">$${((hA+globalB)-mvb+(mbt-mbv)).toLocaleString()}</td></tr>`;
+            if(y == Y.value && m == M.value) { $("pay-v").innerText = isHide ? "$ --" : `$${vt.toLocaleString()}`; 
+    $("days-v").innerText = v; 
+    
+    // 公式顯示：如果隱私模式開啟，就顯示隱藏文字
+    $("salaryFormula").innerText = isHide ? "HIDDEN MODE" : `(${hA}/30)×${v}${mbv>0?` + bonus $${mbv}`:''}`; 
+}
         });
         $("pendingTotal").innerText=`$${pool.toLocaleString()}`; $("pendingList").innerHTML=pL||'<div style="text-align:center;padding:20px 0;color:#0984e3;font-size:12px;opacity:0.6;">目前無待領項目</div>'; $("statsRecordBody").innerHTML=sH;
     }
