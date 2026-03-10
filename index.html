@@ -7,7 +7,7 @@
     <style>
         :root { 
             --v-clr: #0984e3; --s-clr: #00cec9; --bg: #f0f7fa; 
-            --danger: #74b9ff; --success: #55efc4; 
+            --danger: #74b9ff; --success: #00cec9; 
             --card-grad: radial-gradient(circle at top left, #1e90ff 0%, #0652ad 70%, #0a3d62 100%);
         }
 
@@ -126,12 +126,12 @@
         .pending-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #f0f7fa; width: 100%; gap: 10px; }
         .pending-left { display: flex; align-items: baseline; gap: 8px; flex: 1; min-width: 0; }
         .pending-ym { font-size: 15px; font-weight: 800; color: #444; flex-shrink: 0; }
-        .pending-formula { font-size: 10px; color: #b2bec3; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .pending-formula { font-size: 8 px; color: #b2bec3; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .pending-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
         .pending-amount { font-size: 16px; font-weight: 900; color: var(--v-clr); }
-        .quick-pay-btn { border: none; padding: 8px 14px; border-radius: 12px; font-size: 11px; font-weight: 900; cursor: pointer; transition: 0.3s; }
-        .quick-pay-btn.btn-ready { background: var(--v-clr) !important; color: #fff !important; }
-        .quick-pay-btn.btn-wait { background: #f0f7fa !important; color: #b2bec3 !important; cursor: not-allowed; }
+        .quick-pay-btn { border: none; padding: 6px 10px; border-radius: 6px; font-size: 10px; font-weight: 900; cursor: pointer; transition: 0.3s; }
+        .quick-pay-btn.btn-ready { background: var(--danger)  !important; color: #fff !important; }
+        .quick-pay-btn.btn-wait { background: #fff !important; color: #b2bec3 !important; cursor: not-allowed; }
         .config-row { display: flex; gap: 15px; width: 100%; }
         .config-group { flex: 1; display: flex; flex-direction: column; }
         .config-label { font-size: 10px; color: #8eb3c5; font-weight: bold; margin-bottom: 6px; }
@@ -206,7 +206,7 @@
             </table>
         </div>
         <div class="admin-section">
-            <span class="section-title">⚙️ 航行參數</span>
+            <span class="section-title">⚙️ 參數</span>
             <div class="config-row">
                 <div class="config-group">
                     <label class="config-label">參數 A</label>
@@ -376,16 +376,16 @@ let isHide = (globalA === 0);;
                 pL += `<div class="pending-item">
         <div style="flex:1;">
             <span style="font-weight:bold;">${fmt(y,m)}</span>
-            <small style="color:#555"> ${isHide ? '[ DATA LOCKED ]' : `(${hA}/30)×${v}${mbv>0?`+${mbv}`:''}`}</small>
+            <small style="color:#74b9ff"> ${isHide ? '[ DATA LOCKED ]' : `(${hA}/30)×${v}${mbv>0?`+${mbv}`:''}`}</small>
         </div>
         <div style="display:flex; align-items:center; gap:15px;">
             <span class="pending-amount">$${isHide ? '--' : vt.toLocaleString()}</span>
-            <button class="quick-pay-btn ${isCf?'btn-ready':'btn-wait'}" onclick="quickPay(${y},${m})">${isCf?'RECEIVE':'LOCKED'}</button>
+            <button class="quick-pay-btn ${isCf?'btn-ready':'btn-wait'}" onclick="quickPay(${y},${m})">${isCf?'V':'--'}</button>
         </div>
        </div>`;
             }
             sH += `<tr>
-        <td>${isPd?'[OK]':'[--]'} ${fmt(y, m)}</td>
+        <td>${isPd?'🆗 ':'💬 '} ${fmt(y, m)}</td>
         <td style="color:var(--mj-v-clr)">$${isHide ? '--' : vt.toLocaleString()}</td>
         <td style="color:#666">$${isHide ? '--' : ((hA+globalB)-mvb+(mbt-mbv)).toLocaleString()}</td>
        </tr>`;
