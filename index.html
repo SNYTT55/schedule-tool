@@ -225,7 +225,7 @@
     let Y = $("yearSel"), M = $("monthSel"), pressTimer;
 
     function saveConfig() { localStorage.setItem("confA", $("baseA").value); localStorage.setItem("confB", $("baseB").value); calc(); }
-    function loadConfig() { $("baseA").value = localStorage.getItem("confA") || 1900; $("baseB").value = localStorage.getItem("confB") || 1800; }
+    function loadConfig() { $("baseA").value = localStorage.getItem("confA") || ""; $("baseB").value = localStorage.getItem("confB") || ""; }
     function fmt(y, m) { return `${y}-${String(m).padStart(2, '0')}`; }
 
     function init() {
