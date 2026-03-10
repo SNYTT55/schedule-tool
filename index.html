@@ -114,6 +114,7 @@
         .salary-card.is-paid :is(#salary-title, .salary-main, #days-v, #days-v + small, #salaryFormula, .bonus-hint, #statusBadge) { 
             color: #009a9a !important; text-shadow: none !important; 
         }
+        .salary-card.is-paid #statusBadge { background: white; color: #009a9a;  transform: rotate(-6deg); /* 微微傾斜，像是隨手蓋上去的 */;  font-size: 16px;  }
         .salary-card.is-paid .bonus-box { background: rgba(0, 206, 201, 0.05); border-color: rgba(0, 206, 201, 0.1); }
         .salary-card.is-paid .bonus-box label { color: #009a9a !important; }
         .salary-card.is-paid .bonus-box input { color: #009a9a !important; }
