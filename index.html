@@ -125,10 +125,10 @@
         .section-title { font-size: 14px; font-weight: 800; color: var(--v-clr); display: block; margin-bottom: 15px; }
         .pending-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #f0f7fa; width: 100%; gap: 10px; }
         .pending-left { display: flex; align-items: baseline; gap: 8px; flex: 1; min-width: 0; }
-        .pending-ym { font-size: 15px; font-weight: 800; color: #444; flex-shrink: 0; }
-        .pending-formula { font-size: 8 px; color: #b2bec3; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .pending-ym { font-size: 12px; font-weight: 800; color: #444; flex-shrink: 0; }
+        .pending-formula { font-size: 6px; color: #828282; font-family:monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .pending-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-        .pending-amount { font-size: 16px; font-weight: 900; color: var(--v-clr); }
+        .pending-amount { font-size: 14px; font-weight: 900; color: var(--v-clr); }
         .quick-pay-btn { border: none; padding: 6px 10px; border-radius: 6px; font-size: 10px; font-weight: 900; cursor: pointer; transition: 0.3s; }
         .quick-pay-btn.btn-ready { background: var(--danger)  !important; color: #fff !important; }
         .quick-pay-btn.btn-wait { background: #fff !important; color: #b2bec3 !important; cursor: not-allowed; }
@@ -386,8 +386,8 @@ let isHide = (globalA === 0);;
             }
             sH += `<tr>
         <td>${isPd?'🆗 ':'💬 '} ${fmt(y, m)}</td>
-        <td style="color:var(--mj-v-clr)">$${isHide ? '--' : vt.toLocaleString()}</td>
-        <td style="color:#666">$${isHide ? '--' : ((hA+globalB)-mvb+(mbt-mbv)).toLocaleString()}</td>
+        <td style="color:var(--v-clr)">$${isHide ? '--' : vt.toLocaleString()}</td>
+        <td style="color:var(--s-clr)">$${isHide ? '--' : ((hA+globalB)-mvb+(mbt-mbv)).toLocaleString()}</td>
        </tr>`;
             if(y == Y.value && m == M.value) { 
     // 金額：隱私模式下顯示 --
