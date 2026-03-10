@@ -379,7 +379,9 @@ let isHide = (globalA === 0);;
                        </div>`;
             }
             sH += `<tr><td>${isPd?'✅ ':'⏳ '} ${fmt(y, m)}</td><td style="color:var(--v-clr)">$${isHide ? '--' : vt.toLocaleString()}</td><td style="color:var(--s-clr)">$${((hA+globalB)-mvb+(mbt-mbv)).toLocaleString()}</td></tr>`;
-            if(y == Y.value && m == M.value) { $("pay-v").innerText = isHide ? "$ --" : `$${isHide ? '--' : vt.toLocaleString()}`; 
+            if(y == Y.value && m == M.value) { 
+    // 金額顯示
+    $("pay-v").innerText = isHide ? "$ --" : `$${vt.toLocaleString()}`; 
     $("days-v").innerText = v; 
     
     // 公式顯示：如果隱私模式開啟，就顯示隱藏文字
