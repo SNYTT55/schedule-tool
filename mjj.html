@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>S H I F T _ M U J I _ V3</title>
+    <style>
+        :root { 
+            --mj-bg: #d1d1cc;           /* 背景深灰色 */
+            --mj-card-bg: #ffffff;      /* 紙張白色 */
+            --mj-text-main: #333333;
+            --mj-text-sub: #7f7f7f;
+            --mj-border: #1a1a1a;       /* 工業感黑線 */
+            --mj-v-clr: #A995A9;
+            --mj-s-clr: #8a9980;
+            --mj-accent: #7f0019;
+            --mj-success: #a4b09c;
+        }
+
+        * { box-sizing: border-box; -webkit-font-smoothing: antialiased; letter-spacing: 0.02em; }
+
+        body { 
+            font-family: "Helvetica Neue", Helvetica, "PingFang TC", sans-serif;
+            background: var(--mj-bg); display: flex; justify-content: center; padding: 40px 15px; margin: 0; 
+        }
+
+        /* --- 資料夾外殼結構 --- */
+        .notebook { width: 100%; max-width: 480px; position: relative; }
+
+        /* 頂部標籤導航 */
+        .tab-nav { display: flex; gap: 4px; padding-left: 10px; }
+        .tab-nav button { 
+            border: 2px solid var(--mj-border); border-bottom: none;
+            padding: 10px 20px; font-weight: 900; font-size: 11px; cursor: pointer; 
+            background: #bbb; color: #666; border-radius: 8px 8px 0 0;
+            position: relative; z-index: 1; transition: 0.2s;
+        }
+        .tab-nav button.active { 
+            background: var(--mj-card-bg); color: var(--mj-border); 
+            padding-top: 14px; margin-top: -4px; z-index: 3; /* 壓在內容區的黑線上 */
+        }
+
+        /* 內容區：模擬紙張 */
+        .content-paper { 
+            background: var(--mj-card-bg); border: 2px solid var(--mj-border);
+            box-shadow: 10px 10px 0px rgba(0,0,0,0.1); padding: 25px 15px; 
+            position: relative; z-index: 2; margin-top: -2px; min-height: 500px;
+        }
+
+        /* --- 以下為你原始版本的 CSS 邏輯 (完全保留) --- */
+        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #f0f0f0; }
+        .legend-area { display: flex; flex-direction: column; gap: 4px; }
+        .legend-staff { display: flex; gap: 15px; font-size: 12px; font-weight: 500; color: var(--mj-text-main); }
+        .dot { width: 10px; height: 10px; display: inline-block; margin-right: 6px; vertical-align: middle; }
+        .v-bg { background: var(--mj-v-clr); } .s-bg { background: var(--mj-s-clr); }
+        
+        .calendar-grid { 
+    display: grid; 
+    grid-template-columns: repeat(7, 1fr); 
+    gap: 0; 
+    border: 2px solid var(--mj-border); /* 外框加粗 */
+    margin-bottom: 20px; 
+    background: transparent ; /* 利用背景色當作格線顏色 */
+}
+
+.weekday { 
+    text-align: center; 
+    font-size: 11px; 
+    font-weight: 900;
+    color: var(--mj-text-main); 
+    padding: 12px 0; 
+    background: #fdfaf5; 
+    border: 0.5px solid var(--mj-border);
+}
+
+.day { 
+    aspect-ratio: 1; 
+    display: flex; 
+    flex-direction: column; 
+    border: 0.5px solid var(--mj-border); /* 內格細線 */
+    overflow: hidden; 
+    background: #fff; 
+    cursor: pointer; 
+    position: relative; 
+    transition: background 0.1s;
+}
+
+.day:active {
+    background: #f0f0f0; /* 點擊時的視覺回饋 */
+}
+
+.day.empty { 
+    background: #eee; 
+}
+
+.date-num { 
+    font-size: 10px; 
+    padding: 5px; 
+    color: var(--mj-text-sub); 
+    font-weight: 700;
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    z-index: 2; 
+}
+        /* --- Slot 內部文字優化 --- */
+.slot { 
+    flex: 1; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-size: 11px; 
+    font-weight: 800; 
+    text-transform: uppercase;
+}
+        .v-bg-slot { background: #bda6bd; }
+        .s-bg-slot { background: #bec7b8; }
+        .is-full-v .slot-am { flex: 1; background: var(--mj-v-clr); color: #fff; font-size: 14px; }
+        .is-full-s .slot-am { flex: 1; background: var(--mj-s-clr); color: #fff; font-size: 14px; }
+        .is-full-v .slot-pm, .is-full-s .slot-pm { display: none; }
+
+
+/* --- 精練版薪資標籤 優化版 --- */
+.salary-card { 
+    display: none; margin-top: 15px; background: #fff; 
+    background-color: #fdfaf5; /* 溫潤的米色底 */
+  border: 1px dashed #d1c7b7; /* 虛線邊框，像撕票線 */
+  padding: 24px;
+  border-radius: 4px; /* 手帳紙張通常不會太圓潤，保留一點直角感 */
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.05); /* 硬挺的疊加陰影，增加紙張厚度感 */
+  position: relative;
+  overflow: hidden;
+}
+
+/* 裝飾性：左側的活頁打孔效果 */
+.salary-card::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 0;
+  bottom: 0;
+  width: 14px;
+  background-image: radial-gradient(circle, #e8e0d5 3px, transparent 6px);
+  background-size: 10px 25px; /* 模擬活頁本的圓孔 */
+}
+
+/* 顯示時的狀態：使用細邊框與輕微陰影替代粗框 */
+.salary-card.show { 
+    display: block !important; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.salary-card-head { 
+    padding: 8px 15px; border-bottom: 1.5px solid #f0f0f0;
+    display: flex; justify-content: space-between; align-items: center;
+}
+
+.salary-card-head span { 
+    font-size: 14px; font-weight: 700; color:var(--mj-accent); letter-spacing: 0.15em; 
+}
+
+/* 膠囊狀態標籤 */
+#statusBadge { 
+display: inline-block;
+  padding: 4px 12px;
+  border: 2px solid; /* 實心邊框增加印章感 */
+  border-radius: 2px; /* 方正一點的印章 */
+  font-weight: 800;
+  opacity: 0.85; /* 微透出底下的紙張色 */
+    background: rgba(192, 57, 43, 0.05) ;  color: #c0392b; font-size: 12px; 
+    padding: 2px 10px; font-weight: 600; border-radius: 50px;
+}
+
+.salary-card-main { 
+    padding: 15px; display: flex; justify-content: space-between; align-items: flex-end; 
+}
+
+/* 金額區塊與公式並排 */
+.amt-group { display: flex; align-items: baseline; gap: 8px; }
+
+.salary-amt { 
+    font-size: 32px; font-weight: 700; color: var(--mj-accent); 
+    letter-spacing: -1px; font-family: 'Helvetica Neue', Arial;
+}
+
+/* 公式：放在金額後面，縮小且變淡 */
+#salaryFormula { 
+    font-size: 11px; color: #bbb; font-family: monospace; 
+    background: #f9f9f9; padding: 1px 6px; border-radius: 2px;
+    margin-bottom: 4px; /* 稍微往上提一點點對齊基準線 */
+}
+
+.salary-days { 
+    font-size: 16px; font-weight: 700; color: var(--mj-text-main); 
+    padding-bottom: 4px;
+}
+
+.salary-days small { font-size: 10px; color: var(--mj-text-sub); margin-left: 2px; }
+
+/* 已結清狀態的色彩變化 (Vivid Green) */
+.salary-card.is-paid { 
+    background: white ; border: 2px solid var(--mj-success);
+}
+.salary-card.is-paid span { 
+    font-size: 14px; font-weight: 700; color: var(--mj-success); letter-spacing: 0.15em; 
+}
+.salary-card.is-paid #statusBadge { background: white; color: var(--mj-success);  transform: rotate(-6deg); /* 微微傾斜，像是隨手蓋上去的 */;  font-size: 16px;  }
+.salary-card.is-paid .salary-amt { color: var(--mj-success); }
+.salary-card.is-paid .bonus-box input { 
+    color: var(--mj-success); 
+}
+
+        
+
+        .bonus-drawer { max-height: 0; opacity: 0; transition: 0.2s; overflow: hidden; }
+        .salary-card.active .bonus-drawer { max-height: 80px; opacity: 1; border-top: 1px solid #eee; margin-top: 10px; }
+        .bonus-grid { display: flex; width: 100%; }
+        .bonus-box { flex: 1; display: flex; align-items: center; padding: 10px; gap: 8px; border-right: 1px solid #eee; }
+        .bonus-box label { font-size: 9px; color: var(--mj-text-sub); font-weight: 700; white-space: nowrap; }
+        .bonus-box input { width: 100%; border: none; background: transparent; font-size: 16px; font-weight: 700; outline: none; color: var(--mj-accent); }
+
+        .note-area { width: 100%; border: 1px solid #ddd; border-radius: 2px; padding: 12px; height: 70px; margin-top: 15px; resize: none; outline: none; }
+        
+        #adminArea { display: none; }
+        .admin-section { 
+    background: #fff; 
+    border: 1.5px solid var(--mj-border); /* 跟月曆一樣的黑線 */
+    padding: 20px; 
+    margin-bottom: 20px; 
+    border-radius: 2px;
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.05); /* 輕微的紙張陰影 */
+}
+.section-title { 
+    font-size: 13px; 
+    font-weight: 900; 
+    color: var(--mj-border); 
+    text-transform: uppercase; 
+    margin-bottom: 15px; 
+    display: block;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+    letter-spacing: 0.1em;
+}
+
+/* 讓未結帳明細更像清單 */
+.pending-item { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 12px 0; 
+}
+
+.pending-item:last-child { border-bottom: none; }
+
+.pending-amount { 
+    font-size: 16px; 
+    font-weight: 800; 
+    color: var(--mj-accent); 
+    font-family: 'Helvetica Neue', Arial;
+    letter-spacing: -0.05em; /* 讓金額數字看起來更緊湊、專業 */
+}
+        .quick-pay-btn { border: none; padding: 6px 10px; border-radius: 6px; font-size: 10px; font-weight: 900; cursor: pointer; transition: 0.3s; }
+        .quick-pay-btn.btn-ready { background: var(--mj-success)  !important; color: #fff !important; }
+        .quick-pay-btn.btn-wait { background: #fff !important; color:var(--mj-success) !important; cursor: not-allowed; }
+        
+        #yearSel, #monthSel { background: white; font-weight: bold; padding: 5px 10px; ; outline: none; }
+        .config-row { display: flex; gap: 10px; }
+        .config-input { width: 100%; border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: 700; }
+        .stats-table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: center; }
+        .stats-table th { padding-bottom: 8px; border-bottom: 1px solid #ddd; }
+        .stats-table td { padding: 8px 0; border-bottom: 1px solid #eee; }
+    </style>
+</head>
+<body>
+
+<div class="notebook">
+    <div class="tab-nav">
+        <button id="t-v" class="active" onclick="switchMode('v')">LOGS</button>
+        <button id="t-admin" onclick="switchMode('admin')">DATA</button>
+    </div>
+
+    <div class="content-paper">
+        
+        <div id="vArea">
+            <div class="toolbar">
+                <div class="legend-area">
+                    <div class="legend-staff"><div><span class="dot v-bg"></span>V</div><div><span class="dot s-bg"></span>S</div></div>
+                    <div style="font-size:10px;color:var(--mj-text-sub);">14:30-18:30 / 18:30-23:00</div>
+                </div>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <button id="lockBtn" style="width:34px;height:34px;border-radius:2px;border:1px solid #ddd;background:white;display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="toggleConfirm()">
+                        <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:none;stroke:var(--mj-text-sub);stroke-width:2.5;"><path d="M20 6L9 17L4 12"></path></svg>
+                    </button>
+                    <select id="yearSel"></select><select id="monthSel"></select>
+                </div>
+            </div>
+
+            <div id="calendarGrid" class="calendar-grid"></div>
+            
+            <div class="salary-card" id="salaryCard" onclick="this.classList.toggle('active')">
+                <div class="salary-card-head">
+                    <span id="salary-title">SETTLEMENT</span>
+                    <div id="statusBadge">待發放</div>
+                </div>
+                <div class="salary-card-main">
+                    <div style="display: flex; align-items: baseline; gap: 10px;">
+                        <div class="salary-amt" id="pay-v">$0</div>
+                        <div id="salaryFormula">--</div>
+                    </div>
+                    <div class="salary-days"><span id="days-v">0</span><small>DAYS</small></div>
+                </div>
+                <div class="bonus-drawer" onclick="event.stopPropagation()">
+                    <div class="bonus-grid">
+                        <div class="bonus-box">
+                            <label>月獎金</label>
+                            <input type="number" id="bt_main" oninput="syncBonus()" placeholder="0">
+                        </div>
+                        <div class="bonus-box">
+                            <label>V獎金</label>
+                            <input type="number" id="bv_main" oninput="syncBonus()" placeholder="0">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <textarea id="monthNote" class="note-area" placeholder="當月備註..."></textarea>
+        </div>
+
+        <div id="adminArea">
+            <div class="admin-section">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <span class="section-title">🗒️ 未結帳明細 &nbsp;&nbsp;<span id="pendingTotal" style="color:var(--mj-accent);">$0</span></span>
+                    <button id="copyFinalBtn" style="font-size:12px;background: #d1d1cc; border:none; cursor:pointer;">COPY</button>
+                </div>
+                <div id="pendingList"></div>
+            </div>
+            <div class="admin-section">
+                <span class="section-title">🧳 歷史紀錄</span>
+                <table class="stats-table">
+                    <thead><tr><th>月份</th><th style="color:var(--mj-v-clr)">V</th><th style="color:var(--mj-s-clr)">S</th></tr></thead>
+                    <tbody id="statsRecordBody"></tbody>
+                </table>
+            </div>
+            <div class="admin-section">
+                <span class="section-title">🔧 參數設定</span>
+                <div class="config-row">
+                    <div style="flex:1">
+                        <label style="font-size:10px">參數 A</label>
+                        <input type="number" id="baseA" class="config-input" oninput="saveConfig()">
+                    </div>
+                    <div style="flex:1">
+                        <label style="font-size:10px">參數 B</label>
+                        <input type="number" id="baseB" class="config-input" oninput="saveConfig()">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    /* --- 這裡完全是你提供的原始 JavaScript，只在 switchMode 補上一點 UI 切換邏輯 --- */
+    const $ = id => document.getElementById(id), KEY = "v_s_v1_purple";
+    let Y = $("yearSel"), M = $("monthSel"), pressTimer;
+
+    function saveConfig() { localStorage.setItem("confA", $("baseA").value); localStorage.setItem("confB", $("baseB").value); calc(); }
+    function loadConfig() { $("baseA").value = localStorage.getItem("confA") || ""; $("baseB").value = localStorage.getItem("confB") || ""; }
+    function fmt(y, m) { return `${y}-${String(m).padStart(2, '0')}`; }
+
+    function init() {
+        loadConfig();
+        const now = new Date();
+        const curY = now.getFullYear();
+        const curM = now.getMonth() + 1;
+        let savedY = localStorage.getItem('lastY') || curY;
+        let savedM = localStorage.getItem('lastM') || curM;
+        for(let y = curY - 1; y <= curY + 2; y++) Y.add(new Option(y, y));
+        Y.value = savedY;
+        const upM = () => {
+            M.innerHTML = "";
+            for(let m = 1; m <= 12; m++) M.add(new Option(m, m));
+            M.value = savedM;
+        };
+        upM();
+        Y.onchange = () => { localStorage.setItem('lastY', Y.value); render(); };
+        M.onchange = () => { localStorage.setItem('lastM', M.value); render(); };
+        render();
+    }
+
+    function switchMode(m) {
+        // 更新標籤樣式
+        $("t-v").classList.toggle('active', m === 'v');
+        $("t-admin").classList.toggle('active', m === 'admin');
+        // 切換顯示區域
+        $("vArea").style.display = (m === 'v' ? 'block' : 'none');
+        $("adminArea").style.display = (m === 'admin' ? 'block' : 'none');
+        if(m==='admin') calc();
+    }
+
+    function toggleConfirm() {
+        let y=Y.value, m=M.value;
+        if(localStorage.getItem(`pd-${y}-${m}`)==='true') return;
+        let cur = localStorage.getItem(`cf-${y}-${m}`) === 'true';
+        let nextStatus = !cur;
+        localStorage.setItem(`cf-${y}-${m}`, nextStatus);
+        if(nextStatus) { localStorage.setItem(`lockA-${y}-${m}`, $("baseA").value); localStorage.setItem(`lockB-${y}-${m}`, $("baseB").value); }
+        render();
+    }
+
+    function quickPay(y, m) {
+        if(localStorage.getItem(`cf-${y}-${m}`) !== 'true') return;
+        localStorage.setItem(`pd-${y}-${m}`, 'true');
+        render();
+    }
+
+    function render() {
+        let y=Y.value, m=M.value, k=`${KEY}-${y}-${m}`, data=JSON.parse(localStorage.getItem(k))||{};
+        let isPd = localStorage.getItem(`pd-${y}-${m}`)==='true', isCf = localStorage.getItem(`cf-${y}-${m}`)==='true';
+        
+        $("lockBtn").style.borderColor = isCf ? "var(--mj-accent)" : "#ddd";
+        $("lockBtn").style.background = isCf ? "var(--mj-accent)" : "white";
+        $("lockBtn").querySelector('svg').style.stroke = isCf ? "white" : "var(--mj-text-sub)";
+        
+        $("salaryCard").className = `salary-card ${isCf?'show':''} ${isPd?'is-paid':''}`;
+        $("statusBadge").innerText = isPd ? "PAID" : "UNPAID";
+        $("salary-title").innerText = `${fmt(y, m)} SETTLEMENT`;
+        $("bt_main").value = localStorage.getItem(`bt-${y}-${m}`)||"";
+        $("bv_main").value = localStorage.getItem(`bv-${y}-${m}`)||"";
+        $("bt_main").disabled = isPd; $("bv_main").disabled = isPd;
+        $("monthNote").value = localStorage.getItem(`nt-${y}-${m}`)||"";
+        
+        let fD=new Date(y, m-1, 1).getDay(), dIM=new Date(y, m, 0).getDate();
+        let h = ['SUN','MON','TUE','WED','THU','FRI','SAT'].map(w=>`<div class="weekday">${w}</div>`).join('');
+        for(let i=0;i<fD;i++) h+='<div class="day empty"></div>';
+        for(let d=1; d<=dIM; d++) {
+            let o=data[d]||{am:'',pm:'',mode:''}, cls = (o.mode==='full-v'?'is-full-v':(o.mode==='full-s'?'is-full-s':''));
+            h+=`<div class="day ${cls}" onmousedown="stP(${d})" onmouseup="edP(${d})" ontouchstart="stP(${d})" ontouchend="edP(${d})">
+                <div class="date-num">${d}</div><div style="flex:1; display:flex; flex-direction:column; width:100%;">
+                <div class="slot slot-am ${o.am?o.am+'-bg-slot':''}">${o.am.toUpperCase()}</div>
+                <div class="slot slot-pm ${o.pm?o.pm+'-bg-slot':''}">${o.pm.toUpperCase()}</div>
+                </div></div>`;
+        }
+        
+        let totalCells = fD + dIM;
+    let nextCells = (7 - (totalCells % 7)) % 7;
+    for(let i=0; i<nextCells; i++) h += '<div class="day empty"></div>';
+    
+    $("calendarGrid").innerHTML = h; 
+    calc();
+}
+
+    function stP(d){ 
+        if(localStorage.getItem(`cf-${Y.value}-${M.value}`)==='true') return;
+        clearTimeout(pressTimer); 
+        pressTimer = setTimeout(() => { 
+            let k=`${KEY}-${Y.value}-${M.value}`, data=JSON.parse(localStorage.getItem(k))||{};
+            delete data[d]; 
+            localStorage.setItem(k, JSON.stringify(data));
+            render();
+            pressTimer = null;
+        }, 600); 
+    }
+
+    function edP(d){ if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; hClick(d); } }
+    
+    function hClick(d){
+        if(localStorage.getItem(`cf-${Y.value}-${M.value}`)==='true') return;
+        let k=`${KEY}-${Y.value}-${M.value}`, data=JSON.parse(localStorage.getItem(k))||{};
+        let ms=['','full-v','full-s','s-am-v-pm','v-am-s-pm'], cur=data[d]?.mode||'', n=ms[(ms.indexOf(cur)+1)%ms.length];
+        let map={'':{am:'',pm:'',mode:''}, 'full-v':{am:'v',pm:'v',mode:'full-v'}, 's-am-v-pm':{am:'s',pm:'v',mode:'s-am-v-pm'}, 'v-am-s-pm':{am:'v',pm:'s',mode:'v-am-s-pm'}, 'full-s':{am:'s',pm:'s',mode:'full-s'}};
+        if (n === '') { delete data[d]; } else { data[d]=map[n]; }
+        localStorage.setItem(k, JSON.stringify(data));
+        render();
+    }
+
+    function syncBonus() { if(localStorage.getItem(`pd-${Y.value}-${M.value}`)==='true') return; localStorage.setItem(`bt-${Y.value}-${M.value}`, $("bt_main").value); localStorage.setItem(`bv-${Y.value}-${M.value}`, $("bv_main").value); calc(); }
+
+    function calc() {
+        let globalA = parseFloat($("baseA").value)||0, globalB = parseFloat($("baseB").value)||0;
+        let isHide = (globalA === 0);
+        let pool=0, sH="", pL="";
+        const now = new Date();
+        const currentYM = now.getFullYear() * 12 + (now.getMonth() + 1);
+        const allKeys = Object.keys(localStorage).filter(k => k.startsWith(KEY + "-")).sort();
+        allKeys.forEach(key => {
+            let [y, m] = key.replace(KEY + "-", "").split('-').map(Number);
+            let targetYM = y * 12 + m;
+            let d=JSON.parse(localStorage.getItem(key))||{}, v=0;
+            Object.keys(d).forEach(k=>{ if(d[k].am==='v')v+=0.5; if(d[k].pm==='v')v+=0.5; });
+            let isPd = localStorage.getItem(`pd-${y}-${m}`)==='true', isCf = localStorage.getItem(`cf-${y}-${m}`)==='true';
+            if (targetYM > currentYM && !isPd && !isCf) return;
+            let mbv = parseFloat(localStorage.getItem(`bv-${y}-${m}`)) || 0;
+            if (v === 0 && mbv === 0 && !isPd) return;
+            let hA = (isCf || isPd) ? (parseFloat(localStorage.getItem(`lockA-${y}-${m}`))||globalA) : globalA;
+            let mbt = parseFloat(localStorage.getItem(`bt-${y}-${m}`))||0;
+            let mvb = Math.round(v * (hA/30)), vt = mvb + mbv;
+            if(!isPd && vt > 0){ 
+                pool += vt;
+                pL += `<div class="pending-item">
+                        <div style="flex:1;"><span style="font-weight:bold;">${fmt(y,m)}</span>
+                        <small style="color:var(--mj-success); font-size:10px;">${isHide ? ' [LOCKED]' : `(${hA}/30)×${v}`}</small></div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                        <span class="pending-amount">$${isHide ? '--' : vt.toLocaleString()}</span>
+                        <button class="quick-pay-btn ${isCf?'btn-ready':'btn-wait'}" onclick="quickPay(${y},${m})">${isCf?'REVIEW':'PENDING'}</button>
+                        </div></div>`;
+            }
+            sH += `<tr><td>${isPd?'[OK]':'[--]'} ${fmt(y, m)}</td><td style="color:#A995A9">$${isHide ? '--' : vt.toLocaleString()}</td><td style="color:#8a9980">$${isHide ? '--' : ((hA+globalB)-mvb+(mbt-mbv)).toLocaleString()}</td></tr>`;
+            if(y == Y.value && m == M.value) { 
+                $("pay-v").innerText = isHide ? "$ --" : `$${vt.toLocaleString()}`; 
+                $("days-v").innerText = v; 
+                $("salaryFormula").innerText = isHide ? "HIDDEN" : `(${hA}/30)×${v}`; 
+            }
+        });
+        $("pendingTotal").innerText=`$${pool.toLocaleString()}`; $("pendingList").innerHTML=pL||'<div style="text-align:center;padding:30px 0;color:#bbb;font-size:12px;">無待領項目</div>'; $("statsRecordBody").innerHTML=sH;}
+
+    $("copyFinalBtn").onclick = () => {
+        let items=[], total=0;
+        Object.keys(localStorage).filter(k => k.startsWith(KEY + "-")).sort().forEach(k => {
+            let [y, m] = k.replace(KEY + "-", "").split('-').map(Number);
+            if(localStorage.getItem(`pd-${y}-${m}`)==='true' || localStorage.getItem(`cf-${y}-${m}`)!=='true') return;
+            let baseA = parseFloat(localStorage.getItem(`lockA-${y}-${m}`)) || parseFloat($("baseA").value) || 1900;
+            let v=0, d=JSON.parse(localStorage.getItem(k))||{}; Object.keys(d).forEach(k=>{if(d[k].am==='v')v+=0.5; if(d[k].pm==='v')v+=0.5;});
+            let bv=parseFloat(localStorage.getItem(`bv-${y}-${m}`))||0;
+            let mt = Math.round(v * (baseA/30)) + bv;
+            if(items.length || mt > 0) { 
+                items.push(`${fmt(y,m)}: $${mt.toLocaleString()} (${v}天${bv>0?` + 獎金$${bv}`:''})`); 
+                total+=mt; 
+            }
+        });
+        if(items.length){ 
+            let txt=`【未結清薪資明細】\n\n${items.join('\n')}\n\n==========\n總計: $${total.toLocaleString()}`; 
+            let el=document.createElement('textarea'); el.value=txt; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); 
+            alert("明細已複製。"); 
+        }
+    };
+
+    init(); $("monthNote").oninput=()=>{localStorage.setItem(`nt-${Y.value}-${M.value}`,$("monthNote").value);};
+</script>
+</body>
+</html>
