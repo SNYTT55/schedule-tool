@@ -319,11 +319,11 @@ display: inline-block;
                     <div class="bonus-grid">
                         <div class="bonus-box">
                             <label>月獎金</label>
-                            <input type="number" id="bt_main" oninput="syncBonus()" placeholder="0">
+                            <input type="number" id="bt_main" oninput="syncBonus()" onkeypress="return event.charCode >= 48" placeholder="0" min="0">
                         </div>
                         <div class="bonus-box">
                             <label>V獎金</label>
-                            <input type="number" id="bv_main" oninput="syncBonus()" placeholder="0">
+                            <input type="number" id="bv_main" oninput="syncBonus()" onkeypress="return event.charCode >= 48" placeholder="0" min="0">
                         </div>
                     </div>
                 </div>
@@ -351,11 +351,11 @@ display: inline-block;
                 <div class="config-row">
                     <div style="flex:1">
                         <label style="font-size:10px">參數 A</label>
-                        <input type="number" id="baseA" class="config-input" oninput="saveConfig()">
+                        <input type="number" id="baseA" class="config-input" oninput="saveConfig()" onkeypress="return event.charCode >= 48" min="0">
                     </div>
                     <div style="flex:1">
                         <label style="font-size:10px">參數 B</label>
-                        <input type="number" id="baseB" class="config-input" oninput="saveConfig()">
+                        <input type="number" id="baseB" class="config-input" oninput="saveConfig()" onkeypress="return event.charCode >= 48" min="0">
                     </div>
                 </div>
             </div>
@@ -413,10 +413,12 @@ display: inline-block;
         render();
     }
 
-    function quickPay(y, m) {
-        if(localStorage.getItem(`cf-${y}-${m}`) !== 'true') return;
+function quickPay(y, m) {
+        if(localStorage.getItem(`cf-${y}-${m}`) !== 'true') return alert("請先確認排班！");
         localStorage.setItem(`pd-${y}-${m}`, 'true');
-        render();
+        // 關鍵：領完錢要重新計算統計頁面
+        if($("adminArea").style.display === 'block') calc(); 
+        render(); 
     }
 
     function render() {
@@ -455,7 +457,7 @@ display: inline-block;
     calc();
 }
 
-    function stP(d){ 
+function stP(d){ 
         if(localStorage.getItem(`cf-${Y.value}-${M.value}`)==='true') return;
         clearTimeout(pressTimer); 
         pressTimer = setTimeout(() => { 
@@ -463,7 +465,16 @@ display: inline-block;
             delete data[d]; 
             localStorage.setItem(k, JSON.stringify(data));
             render();
-            pressTimer = null;
+            // 總共 1.5秒 整月清空
+            pressTimer = setTimeout(() => {
+                if(confirm("確定要清空整個月的資料與獎金嗎？")){
+                    localStorage.removeItem(k);
+                    localStorage.removeItem(`bv-${Y.value}-${M.value}`);
+                    localStorage.removeItem(`bt-${Y.value}-${M.value}`);
+                    pressTimer = null;
+                    render(); // render 會自動觸發裡面的 calc()
+                }
+            }, 900); 
         }, 600); 
     }
 
