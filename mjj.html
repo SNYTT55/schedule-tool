@@ -12,8 +12,8 @@
             --mj-text-main: #333333;
             --mj-text-sub: #7f7f7f;
             --mj-border: #1a1a1a;       /* 工業感黑線 */
-            --mj-v-clr: #A995A9;
-            --mj-s-clr: #8a9980;
+            --mj-v-clr: #B36754;
+            --mj-s-clr: #556B2F;
             --mj-accent: #7f0019;
             --mj-success: #a4b09c;
         }
@@ -114,8 +114,8 @@
     font-weight: 800; 
     text-transform: uppercase;
 }
-        .v-bg-slot { background: #bda6bd; }
-        .s-bg-slot { background: #bec7b8; }
+        .v-bg-slot { background: #c38677; }
+        .s-bg-slot { background: #708238; }
         .is-full-v .slot-am { flex: 1; background: var(--mj-v-clr); color: #fff; font-size: 14px; }
         .is-full-s .slot-am { flex: 1; background: var(--mj-s-clr); color: #fff; font-size: 14px; }
         .is-full-v .slot-pm, .is-full-s .slot-pm { display: none; }
@@ -549,7 +549,7 @@ function stP(d){
             let bv=parseFloat(localStorage.getItem(`bv-${y}-${m}`))||0;
             let mt = Math.round(v * (baseA/30)) + bv;
             if(items.length || mt > 0) { 
-                items.push(`${fmt(y,m)}: $${mt.toLocaleString()} (${v}天${bv>0?` + 獎金${bv}`:''})`); 
+                items.push(`${fmt(y,m)}: $${mt.toLocaleString()} (${v}天${bv>0?` + Bonus${bv}`:''})`); 
                 total+=mt; 
             }
         });
