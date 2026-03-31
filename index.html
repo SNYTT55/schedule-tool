@@ -142,6 +142,11 @@
         .stats-table { width: 100%; border-collapse: collapse; font-size: 13px; }
         .stats-table td { padding: 15px 0; border-bottom: 1px solid #f0f7fa; font-weight: 800; text-align: center; }
         @keyframes slideUp { from { opacity:0; transform:translateY(15px); } to { opacity:1; transform:translateY(0); } }
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+            }
     </style>
 </head>
 <body>
@@ -183,8 +188,8 @@
             </div>
             <div class="bonus-container" onclick="event.stopPropagation()">
                 <div class="bonus-inner">
-                    <div class="bonus-box"><label>月獎金</label><input type="number" id="bt_main" oninput="syncBonus()" placeholder="0"min="0"></div>
-                    <div class="bonus-box"><label>V獎金</label><input type="number" id="bv_main" oninput="syncBonus()" placeholder="0" min="0"></div>
+                    <div class="bonus-box"><label>月獎金</label><input type="number" id="bt_main" oninput="syncBonus()" onkeypress="return event.charCode >= 48" placeholder="0"min="0"></div>
+                    <div class="bonus-box"><label>V獎金</label><input type="number" id="bv_main" oninput="syncBonus()" onkeypress="return event.charCode >= 48" placeholder="0" min="0"></div>
                 </div>
             </div>
         </div>
@@ -211,11 +216,11 @@
             <div class="config-row">
                 <div class="config-group">
                     <label class="config-label">參數 A</label>
-                    <input type="number" id="baseA" class="config-input" oninput="saveConfig()">
+                    <input type="number" id="baseA" class="config-input" oninput="saveConfig()" onkeypress="return event.charCode >= 48" min="0">
                 </div>
                 <div class="config-group">
                     <label class="config-label">參數 B</label>
-                    <input type="number" id="baseB" class="config-input" oninput="saveConfig()">
+                    <input type="number" id="baseB" class="config-input" oninput="saveConfig()" onkeypress="return event.charCode >= 48" min="0">
                 </div>
             </div>
         </div>
@@ -270,6 +275,7 @@
     function quickPay(y, m) {
         if(localStorage.getItem(`cf-${y}-${m}`) !== 'true') return alert("請先確認排班！");
         localStorage.setItem(`pd-${y}-${m}`, 'true');
+        if($("adminArea").style.display === 'block') calc();
         render();
     }
 
@@ -345,7 +351,7 @@
     }
 
     function syncBonus() { if(localStorage.getItem(`pd-${Y.value}-${M.value}`)==='true') return; localStorage.setItem(`bt-${Y.value}-${M.value}`, $("bt_main").value); localStorage.setItem(`bv-${Y.value}-${M.value}`, $("bv_main").value); calc(); }
-
+    
     function calc() {
         let globalA = parseFloat($("baseA").value)||0, globalB = parseFloat($("baseB").value)||0;
 // 如果 globalA 是 0，就代表是隱私模式
