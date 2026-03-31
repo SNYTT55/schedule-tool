@@ -131,6 +131,11 @@
         .stats-table th { padding: 12px 0; color: #e2a0a0; border-bottom: 2px solid #fdf2f2; }
         .stats-table td { padding: 18px 0; border-bottom: 1px solid #fff5f5; font-weight: 800; text-align: center; }
         @keyframes slideUp { from { opacity:0; transform:translateY(15px); } to { opacity:1; transform:translateY(0); } }
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
     </style>
 </head>
 <body>
@@ -175,8 +180,8 @@
 
             <div class="bonus-container" onclick="event.stopPropagation()">
                 <div class="bonus-inner">
-                    <div class="bonus-box"><label>月獎金</label><input type="number" id="bt_main" oninput="syncBonus()" placeholder="0"></div>
-                    <div class="bonus-box"><label>V獎金</label><input type="number" id="bv_main" oninput="syncBonus()" placeholder="0"></div>
+                    <div class="bonus-box"><label>月獎金</label><input type="number" id="bt_main" oninput="syncBonus()" onkeypress="return event.charCode >= 48" placeholder="0"></div>
+                    <div class="bonus-box"><label>V獎金</label><input type="number" id="bv_main" oninput="syncBonus()" onkeypress="return event.charCode >= 48" placeholder="0"></div>
                 </div>
             </div>
         </div>
@@ -201,8 +206,8 @@
         <div class="admin-section">
             <span class="section-title">⚙️ 參數設定 </span>
             <div style="display:flex; gap:12px;">
-                <div style="flex:1;"><label style="font-size:10px; color:#aaa;">參數 A </label><input type="number" id="baseA" class="config-input" oninput="saveConfig()"></div>
-                <div style="flex:1;"><label style="font-size:10px; color:#aaa;">參數 B </label><input type="number" id="baseB" class="config-input" oninput="saveConfig()"></div>
+                <div style="flex:1;"><label style="font-size:10px; color:#aaa;">參數 A </label><input type="number" id="baseA" class="config-input" oninput="saveConfig()" onkeypress="return event.charCode >= 48" min="0"></div>
+                <div style="flex:1;"><label style="font-size:10px; color:#aaa;">參數 B </label><input type="number" id="baseB" class="config-input" oninput="saveConfig()" onkeypress="return event.charCode >= 48" min="0"></div>
             </div>
         </div>
     </div>
@@ -256,6 +261,7 @@
     function quickPay(y, m) {
         if(localStorage.getItem(`cf-${y}-${m}`) !== 'true') return alert("請先確認排班！");
         localStorage.setItem(`pd-${y}-${m}`, 'true');
+        if($("adminArea").style.display === 'block') calc();
         render();
     }
 
@@ -286,10 +292,9 @@
         $("calendarGrid").innerHTML=h; calc();
     }
 
-    function stP(d){ 
+function stP(d){ 
         if(localStorage.getItem(`cf-${Y.value}-${M.value}`)==='true') return;
         clearTimeout(pressTimer); 
-        // 0.6秒 刪除單格
         pressTimer = setTimeout(() => { 
             let k=`${KEY}-${Y.value}-${M.value}`, data=JSON.parse(localStorage.getItem(k))||{};
             delete data[d]; 
@@ -297,11 +302,13 @@
             render();
             // 總共 1.5秒 整月清空
             pressTimer = setTimeout(() => {
-                localStorage.removeItem(k);
-                localStorage.removeItem(`bv-${Y.value}-${M.value}`);
-                localStorage.removeItem(`bt-${Y.value}-${M.value}`);
-                pressTimer = null; // 關鍵：清空指針避免 edP 被當作點擊
-                render();
+                if(confirm("確定要清空整個月的資料與獎金嗎？")){
+                    localStorage.removeItem(k);
+                    localStorage.removeItem(`bv-${Y.value}-${M.value}`);
+                    localStorage.removeItem(`bt-${Y.value}-${M.value}`);
+                    pressTimer = null;
+                    render(); // render 會自動觸發裡面的 calc()
+                }
             }, 900); 
         }, 600); 
     }
