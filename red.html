@@ -211,12 +211,15 @@
                 <div style="flex:1;"><label style="font-size:10px; color:#aaa;">參數 B </label><input type="number" id="baseB" class="config-input" oninput="saveConfig()" onkeypress="return event.charCode >= 48" min="0"></div>
             </div>
         </div>
-        
-        <div style="margin-top: 20px; border-top: 1px dashed #e1f0f7; padding-top: 15px;">
+                
+        <div class="admin-section" style="margin-top: 20px;">
             <span class="section-title">💾 資料備份 (Base64)</span>
-            <div style="display:flex; gap:12px;">
-                <button onclick="exportBase64()" style="flex: 1; background: var(--v-clr); color: white; border: none; padding: 12px; border-radius: 12px; font-size: 12px; font-weight: bold; cursor: pointer;">複製備份</button>
-                <button onclick="importBase64()" style="flex: 1; background: white; color: var(--v-clr); border: 2px solid var(--v-clr); padding: 12px; border-radius: 12px; font-size: 12px; font-weight: bold; cursor: pointer;">匯入存檔</button>
+            <div style="display:flex; gap:12px; margin-top: 10px;">
+                <button onclick="exportBase64()" style="flex: 1; background: var(--v-clr); color: white; border: none; padding: 12px; border-radius: 15px; font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 10px rgba(214, 48, 49, 0.15);">複製備份</button>
+                <button onclick="importBase64()" style="flex: 1; background: #fff; color: var(--v-clr); border: 2px solid var(--v-clr); padding: 12px; border-radius: 15px; font-size: 13px; font-weight: 800; cursor: pointer;">匯入存檔</button>
+            </div>
+            <div style="font-size: 10px; color: #e2a0a0; text-align: center; margin-top: 12px; font-weight: bold; opacity: 0.8;">
+                建議定期複製代碼至記事本備份，以免瀏覽器緩存清空。
             </div>
         </div>
     </div>
