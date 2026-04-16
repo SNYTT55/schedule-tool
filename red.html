@@ -211,6 +211,14 @@
                 <div style="flex:1;"><label style="font-size:10px; color:#aaa;">參數 B </label><input type="number" id="baseB" class="config-input" oninput="saveConfig()" onkeypress="return event.charCode >= 48" min="0"></div>
             </div>
         </div>
+        
+        <div style="margin-top: 20px; border-top: 1px dashed #e1f0f7; padding-top: 15px;">
+            <span class="section-title">💾 資料備份 (Base64)</span>
+            <div style="display:flex; gap:12px;">
+                <button onclick="exportBase64()" style="flex: 1; background: var(--v-clr); color: white; border: none; padding: 12px; border-radius: 12px; font-size: 12px; font-weight: bold; cursor: pointer;">複製備份</button>
+                <button onclick="importBase64()" style="flex: 1; background: white; color: var(--v-clr); border: 2px solid var(--v-clr); padding: 12px; border-radius: 12px; font-size: 12px; font-weight: bold; cursor: pointer;">匯入存檔</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -340,6 +348,50 @@ function stP(d){
 
     function syncBonus() { if(localStorage.getItem(`pd-${Y.value}-${M.value}`)==='true') return; localStorage.setItem(`bt-${Y.value}-${M.value}`, $("bt_main").value); localStorage.setItem(`bv-${Y.value}-${M.value}`, $("bv_main").value); calc(); }
 
+    // 導出所有資料為 Base64
+function exportBase64() {
+    const allData = {};
+    // 遍歷所有 localStorage 的鍵值對
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        allData[key] = localStorage.getItem(key);
+    }
+    
+    const jsonStr = JSON.stringify(allData);
+    const base64Str = btoa(unescape(encodeURIComponent(jsonStr))); // 支援中文編碼
+    
+    const el = document.createElement('textarea');
+    el.value = base64Str;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    alert("整站存檔已轉為 Base64 並複製到剪貼簿！");
+}
+
+// 匯入 Base64 資料
+function importBase64() {
+    const code = prompt("請貼上備份的 Base64 代碼：");
+    if (!code) return;
+    
+    try {
+        const jsonStr = decodeURIComponent(escape(atob(code)));
+        const importedData = JSON.parse(jsonStr);
+        
+        if (confirm("匯入將覆蓋目前所有數據，確定要繼續嗎？")) {
+            localStorage.clear(); // 清除舊資料
+            for (const key in importedData) {
+                localStorage.setItem(key, importedData[key]);
+            }
+            alert("匯入成功！頁面即將重新載入。");
+            location.reload();
+        }
+    } catch (e) {
+        alert("代碼無效，請檢查是否複製完整。");
+        console.error(e);
+    }
+}
+    
     function calc() {
         let globalA = parseFloat($("baseA").value)||0, globalB = parseFloat($("baseB").value)||0;
 // 如果 globalA 是 0，就代表是隱私模式
