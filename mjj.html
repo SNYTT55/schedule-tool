@@ -337,35 +337,52 @@ display: inline-block;
         <div id="adminArea">
             <div class="admin-section">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                    <span class="section-title">🗒️ 未結帳明細 &nbsp;&nbsp;<span id="pendingTotal" style="color:var(--mj-accent);">$0</span></span>
-                    <button id="copyFinalBtn" style="font-size:12px;background: #d1d1cc; border:none; cursor:pointer;">COPY</button>
+                    <span class="section-title" style="margin-bottom:0; border-bottom:none;">🗒️ 未結帳明細</span>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span id="pendingTotal" style="color:var(--mj-accent); font-weight:900; font-size:18px;">$0</span>
+                        <button id="copyFinalBtn" style="font-size:10px; background: #eee; border:1px solid var(--mj-border); padding:4px 8px; cursor:pointer; font-weight:bold; border-radius:4px;">COPY</button>
+                    </div>
                 </div>
                 <div id="pendingList"></div>
             </div>
+
             <div class="admin-section">
                 <span class="section-title">🧳 歷史紀錄</span>
                 <table class="stats-table">
-                    <thead><tr><th>月份</th><th style="color:var(--mj-v-clr)">V</th><th style="color:var(--mj-s-clr)">S</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th style="color:var(--mj-text-sub); width:40%;">月份</th>
+                            <th style="color:var(--mj-v-clr)">V</th>
+                            <th style="color:var(--mj-s-clr)">S</th>
+                        </tr>
+                    </thead>
                     <tbody id="statsRecordBody"></tbody>
                 </table>
             </div>
+
             <div class="admin-section">
-                <span class="section-title">🔧 參數設定</span>
-                <div class="config-row">
+                <span class="section-title">🔧 參數與備份</span>
+                <div class="config-row" style="margin-bottom:20px;">
                     <div style="flex:1">
-                        <label style="font-size:10px">參數 A</label>
-                        <input type="number" id="baseA" class="config-input" oninput="saveConfig()" onkeypress="return event.charCode >= 48" min="0">
+                        <label style="font-size:10px; font-weight:bold; color:var(--mj-text-sub); display:block; margin-bottom:4px;">參數 A</label>
+                        <input type="number" id="baseA" class="config-input" oninput="saveConfig()" onkeypress="return event.charCode >= 48" min="0" placeholder="0">
                     </div>
                     <div style="flex:1">
-                        <label style="font-size:10px">參數 B</label>
-                        <input type="number" id="baseB" class="config-input" oninput="saveConfig()" onkeypress="return event.charCode >= 48" min="0">
+                        <label style="font-size:10px; font-weight:bold; color:var(--mj-text-sub); display:block; margin-bottom:4px;">參數 B</label>
+                        <input type="number" id="baseB" class="config-input" oninput="saveConfig()" onkeypress="return event.charCode >= 48" min="0" placeholder="0">
+                    </div>
+                </div>
+
+                <div style="border-top: 1px dashed #ddd; padding-top: 15px;">
+                    <label style="font-size:10px; font-weight:bold; color:var(--mj-text-sub); display:block; margin-bottom:8px;">DATA STORAGE (Base64)</label>
+                    <div style="display: flex; gap: 8px;">
+                        <button onclick="exportBase64()" style="flex: 1.2; background: var(--mj-border); color: white; border: none; padding: 10px; border-radius: 4px; font-weight: 800; cursor: pointer; font-size: 11px;">備份代碼</button>
+                        <button onclick="importBase64()" style="flex: 1; background: white; color: var(--mj-border); border: 1.5px solid var(--mj-border); padding: 10px; border-radius: 4px; font-weight: 800; cursor: pointer; font-size: 11px;">匯入存檔</button>
                     </div>
                 </div>
             </div>
         </div>
 
-    </div>
-</div>
 
 <script>
     /* --- 這裡完全是你提供的原始 JavaScript，只在 switchMode 補上一點 UI 切換邏輯 --- */
@@ -495,6 +512,61 @@ function stP(d){
 
     function syncBonus() { if(localStorage.getItem(`pd-${Y.value}-${M.value}`)==='true') return; localStorage.setItem(`bt-${Y.value}-${M.value}`, $("bt_main").value); localStorage.setItem(`bv-${Y.value}-${M.value}`, $("bv_main").value); calc(); }
 
+    function exportBase64() {
+    try {
+        const allData = {};
+        // 遍歷所有 LocalStorage，只抓取跟這個 App 相關的 Key
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            // 根據你的 KEY 規則過濾資料
+            if (key.startsWith(KEY) || key.startsWith('conf') || key.startsWith('pd-') || key.startsWith('cf-') || key.startsWith('nt-') || key.startsWith('bt-') || key.startsWith('bv-') || key.startsWith('lock')) {
+                allData[key] = localStorage.getItem(key);
+            }
+        }
+        
+        // 轉為 JSON 後進行 Base64 編碼
+        const jsonStr = JSON.stringify(allData);
+        const base64Str = btoa(unescape(encodeURIComponent(jsonStr)));
+        
+        // 自動複製到剪貼簿
+        const el = document.createElement('textarea');
+        el.value = base64Str;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        
+        alert("✅ 備份代碼已複製到剪貼簿！\n請將這段文字貼到 Line 或記事本保存。");
+    } catch (e) {
+        alert("導出失敗，請檢查瀏覽器權限。");
+    }
+}
+
+function importBase64() {
+    const code = prompt("請貼上備份代碼 (Base64)：");
+    if (!code || code.trim() === "") return;
+    
+    try {
+        // 解碼並解析
+        const decodedData = JSON.parse(decodeURIComponent(escape(atob(code))));
+        
+        if (confirm("⚠️ 匯入將會刪除目前手機上的所有資料，並替換為備份檔內容。確定要繼續嗎？")) {
+            // 清除目前的相關資料（避免殘留舊資料）
+            localStorage.clear();
+            
+            // 寫入新資料
+            for (const key in decodedData) {
+                localStorage.setItem(key, decodedData[key]);
+            }
+            
+            alert("✅ 匯入成功！網頁將自動重新載入。");
+            location.reload();
+        }
+    } catch (e) {
+        alert("❌ 錯誤：代碼格式不正確，無法還原資料。");
+    }
+}
+    
     function calc() {
         let globalA = parseFloat($("baseA").value)||0, globalB = parseFloat($("baseB").value)||0;
         let isHide = (globalA === 0);
