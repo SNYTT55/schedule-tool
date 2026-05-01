@@ -12,8 +12,8 @@
             --mj-text-main: #333333;
             --mj-text-sub: #7f7f7f;
             --mj-border: #1a1a1a;       /* 工業感黑線 */
-            --mj-v-clr: #d9a58a;
-            --mj-s-clr: #828574;
+            --mj-v-clr: #C5A880;
+            --mj-s-clr: #E8E2D6;
             --mj-accent: #7f0019;
             --mj-success: #a4b09c;
         }
@@ -105,11 +105,24 @@
     z-index: 2; 
 }
         /* --- Slot 內部文字優化 --- */
+/* 格子的容器 */
+.parent-container {
+    display: flex;
+    align-items: center;
+    position: relative; /* 方便做絕對定位或重疊效果 */
+    width: 100%;
+    height: 100%;
+}
+
 .slot { 
-    flex: 1; 
+    flex: 1;        /* 關鍵：強制兩個人平分 50% 的寬度 */
     display: flex; 
     align-items: center; 
     justify-content: center; 
+    
+    height: 22px;   /* 固定高度，讓標籤看起來整齊 */
+    border-radius: 12px; /* 圓角膠囊感 */
+    
     font-size: 11px; 
     font-weight: 800; 
     text-transform: uppercase;
