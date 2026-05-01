@@ -12,8 +12,8 @@
             --mj-text-main: #333333;
             --mj-text-sub: #7f7f7f;
             --mj-border: #1a1a1a;       /* 工業感黑線 */
-            --mj-v-clr: #C5A880;
-            --mj-s-clr: #E8E2D6;
+            --mj-v-clr: #DDBEA9;
+            --mj-s-clr: #f5eedf;
             --mj-accent: #7f0019;
             --mj-success: #a4b09c;
         }
@@ -121,14 +121,14 @@
     justify-content: center; 
     
     height: 22px;   /* 固定高度，讓標籤看起來整齊 */
-    border-radius: 12px; /* 圓角膠囊感 */
+    border-radius: 15px; /* 圓角膠囊感 */
     
     font-size: 11px; 
     font-weight: 800; 
     text-transform: uppercase;
 }
         .v-bg-slot { background: #DDBEA9; color: #1c1d1f; }
-        .s-bg-slot { background: #A5A58D; color: #1c1d1f; }
+        .s-bg-slot { background: #f5eedf; color: #1c1d1f; }
         .is-full-v .slot-am { flex: 1; background: var(--mj-v-clr); color: #1c1d1f;  font-size: 14px; }
         .is-full-s .slot-am { flex: 1; background: var(--mj-s-clr); color: #1c1d1f;  font-size: 14px; }
         .is-full-v .slot-pm, .is-full-s .slot-pm { display: none; }
@@ -609,7 +609,7 @@ function importBase64() {
                             <div style="display:flex; align-items:center; gap:10px;">
                             <span class="pending-amount">$${isHide ? '--' : vt.toLocaleString()}</span>
                             <button class="quick-pay-btn ${isCf?'btn-ready':'btn-wait'}" onclick="quickPay(${y},${m})">${isCf?'REVIEW':'PENDING'}</button>
-                            </div></div>`;
+                            </div></div>`;W
                 }
             
                 // --- 修改這裡：更新主頁面薪資卡片 (當 y, m 等於選擇的年月時) ---
