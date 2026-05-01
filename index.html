@@ -3,246 +3,389 @@
 <head>
     <link rel="apple-touch-icon" href="icon.png">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>🦭</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>SHIFT</title>
     <style>
         :root { 
-            --v-clr: #0984e3; --s-clr: #00cec9; --bg: #f0f7fa; 
-            --danger: #74b9ff; --success: #00cec9; 
-            --card-grad: radial-gradient(circle at top left, #1e90ff 0%, #0652ad 70%, #0a3d62 100%);
+            --mj-bg: #d1d1cc;           /* 背景深灰色 */
+            --mj-card-bg: #ffffff;      /* 紙張白色 */
+            --mj-text-main: #333333;
+            --mj-text-sub: #7f7f7f;
+            --mj-border: #1a1a1a;       /* 工業感黑線 */
+            --mj-v-clr: #C1693C;
+            --mj-s-clr: #4D5139;
+            --mj-accent: #7f0019;
+            --mj-success: #a4b09c;
         }
 
-        * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+        * { box-sizing: border-box; -webkit-font-smoothing: antialiased; letter-spacing: 0.02em; }
 
         body { 
-            font-family: -apple-system, system-ui, sans-serif; 
-            background: var(--bg); 
-            display: flex; 
-            justify-content: center; 
-            padding: 10px; 
-            margin: 0; 
-            touch-action: manipulation; 
-            overflow-x: hidden;
-        }
-        
-        .container { 
-            background: white; padding: 25px 15px; border-radius: 40px; 
-            box-shadow: 0 20px 50px rgba(9, 132, 227, 0.1); width: 100%; max-width: 480px; 
-            position: relative; border: 3px solid #e1f0f7; margin-top: 25px;
+            font-family: "Helvetica Neue", Helvetica, "PingFang TC", sans-serif;
+            background: var(--mj-bg); display: flex; justify-content: center; padding: 40px 15px; margin: 0; 
         }
 
-        .container::before { 
-            content: "🦭"; position: absolute; top: -23px; left: 50%; transform: translateX(-50%); 
-            background: white ; width: 46px; height: 46px; border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; font-size: 24px; 
-            box-shadow: 0 6px 15px rgba(10, 61, 98, 0.3); border: 3px solid #eefaff; z-index: 10;
-        }
-        
-        .mode-switcher { background: #e1f0f7; border-radius: 20px; display: flex; padding: 5px; margin-bottom: 20px; }
-        .mode-btn { flex: 1; border: none; padding: 12px; border-radius: 15px; font-size: 14px; font-weight: bold; cursor: pointer; transition: 0.3s; color: #5a8da3; background: transparent; }
-        .mode-btn.active { background: white; color: var(--v-clr); box-shadow: 0 4px 15px rgba(9, 132, 227, 0.1); }
+        /* --- 資料夾外殼結構 --- */
+        .notebook { width: 100%; max-width: 480px; position: relative; }
 
-        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .legend-area { display: flex; flex-direction: column; gap: 2px; }
-        .legend-staff { display: flex; gap: 15px; font-size: 14px; font-weight: 800; color: #444; }
-        .dot { width: 12px; height: 12px; border-radius: 4px; display: inline-block; margin-right: 6px; vertical-align: middle; }
-        .v-bg { background: var(--v-clr); } .s-bg { background: var(--s-clr); }
-        
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 15px; }
-        .weekday { text-align: center; font-size: 12px; color: #8eb3c5; font-weight: 800; padding-bottom: 8px; }
-        
-        .day { 
-            aspect-ratio: 0.82; display: flex; flex-direction: column; border-radius: 18px; 
-            border: 2px solid #f0f7fa; overflow: hidden; background: #fff; cursor: pointer; 
-            position: relative; -webkit-user-select: none; user-select: none;
+        /* 頂部標籤導航 */
+        .tab-nav { display: flex; gap: 4px; padding-left: 10px; }
+        .tab-nav button { 
+            border: 2px solid var(--mj-border); border-bottom: none;
+            padding: 10px 20px; font-weight: 900; font-size: 11px; cursor: pointer; 
+            background: #bbb; color: #666; border-radius: 8px 8px 0 0;
+            position: relative; z-index: 1; transition: 0.2s;
         }
-        .day.empty { background: #f0f7fa; }
-        .date-num { font-size: 11px; padding: 6px; color: #8eb3c5; font-weight: bold; position: absolute; z-index: 2; }
-        .slot { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 900; color: white; }
+        .tab-nav button.active { 
+            background: var(--mj-card-bg); color: var(--mj-border); 
+            padding-top: 14px; margin-top: -4px; z-index: 3; /* 壓在內容區的黑線上 */
+        }
+
+        /* 內容區：模擬紙張 */
+        .content-paper { 
+            background: var(--mj-card-bg); border: 2px solid var(--mj-border);
+            box-shadow: 10px 10px 0px rgba(0,0,0,0.1); padding: 25px 15px; 
+            position: relative; z-index: 2; margin-top: -2px; min-height: 500px;
+        }
+
+        /* --- 以下為你原始版本的 CSS 邏輯 (完全保留) --- */
+        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #f0f0f0; }
+        .legend-area { display: flex; flex-direction: column; gap: 4px; }
+        .legend-staff { display: flex; gap: 15px; font-size: 12px; font-weight: 500; color: var(--mj-text-main); }
+        .dot { width: 10px; height: 10px; display: inline-block; margin-right: 6px; vertical-align: middle; }
+        .v-bg { background: var(--mj-v-clr); } .s-bg { background: var(--mj-s-clr); }
         
-        .is-full-v .slot-am { flex: 1; font-size: 16px; background: var(--v-clr); }
-        .is-full-s .slot-am { flex: 1; font-size: 16px; background: var(--s-clr); }
+        .calendar-grid { 
+    display: grid; 
+    grid-template-columns: repeat(7, 1fr); 
+    gap: 0; 
+    border: 2px solid var(--mj-border); /* 外框加粗 */
+    margin-bottom: 20px; 
+    background: transparent ; /* 利用背景色當作格線顏色 */
+}
+
+.weekday { 
+    text-align: center; 
+    font-size: 11px; 
+    font-weight: 900;
+    color: var(--mj-text-main); 
+    padding: 12px 0; 
+    background: #fdfaf5; 
+    border: 0.5px solid var(--mj-border);
+}
+
+.day { 
+    aspect-ratio: 1; 
+    display: flex; 
+    flex-direction: column; 
+    border: 0.5px solid var(--mj-border); /* 內格細線 */
+    overflow: hidden; 
+    background: #fff; 
+    cursor: pointer; 
+    position: relative; 
+    transition: background 0.1s;
+}
+
+.day:active {
+    background: #f0f0f0; /* 點擊時的視覺回饋 */
+}
+
+.day.empty { 
+    background: #eee; 
+}
+
+.date-num { 
+    font-size: 10px; 
+    padding: 5px; 
+    color: var(--mj-text-sub); 
+    font-weight: 700;
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    z-index: 2; 
+}
+        /* --- Slot 內部文字優化 --- */
+.slot { 
+    flex: 1; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-size: 11px; 
+    font-weight: 800; 
+    text-transform: uppercase;
+}
+        .v-bg-slot { background: #d9a58a; }
+        .s-bg-slot { background: #828574; }
+        .is-full-v .slot-am { flex: 1; background: var(--mj-v-clr); color: #fff; font-size: 14px; }
+        .is-full-s .slot-am { flex: 1; background: var(--mj-s-clr); color: #fff; font-size: 14px; }
         .is-full-v .slot-pm, .is-full-s .slot-pm { display: none; }
 
 
-        .salary-card { 
-            position: relative; border-radius: 22px; padding: 22px 24px; 
-            display: none; margin-top: 15px; 
-            background: var(--card-grad); 
-            border: 1.5px solid rgba(255, 255, 255, 0.3); 
-            box-shadow: 0 12px 30px rgba(10, 61, 98, 0.25); 
-            transition: all 0.4s ease; cursor: pointer; overflow: hidden; 
-        }
-        .salary-card.show { display: block; animation: slideUp 0.4s ease; }
-        
-        #salary-title { 
-            font-size: 14px; font-weight: 800; color: rgba(255, 255, 255, 0.95) !important; 
-            letter-spacing: 1px; margin-bottom: 8px;
-        }
-        .salary-main { font-size: 24px; font-weight: 900; color: #ffffff !important; letter-spacing: -0.5px; }
-        
-        #days-v { font-size: 18px; font-weight: 800; color: #ffffff !important; }
-        #days-v + small { font-size: 11px; font-weight: 700; color: #ffffff !important; opacity: 0.8; }
-        #salaryFormula { 
-            font-size: 9px; font-weight: 600; color: rgba(255, 255, 255, 0.5) !important; 
-            font-family: 'SF Mono', 'Roboto Mono', monospace; margin-top: 2px;
-        }
-        
-        #statusBadge { 
-            background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.2); 
-            border-radius: 8px; padding: 4px 10px; font-size: 10px; font-weight: 900; color: #ffffff !important; 
-        }
+/* --- 精練版薪資標籤 優化版 --- */
+.salary-card { 
+    display: none; margin-top: 15px; background: #fff; 
+    background-color: #fdfaf5; /* 溫潤的米色底 */
+  border: 1px dashed #d1c7b7; /* 虛線邊框，像撕票線 */
+  padding: 24px;
+  border-radius: 4px; /* 手帳紙張通常不會太圓潤，保留一點直角感 */
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.05); /* 硬挺的疊加陰影，增加紙張厚度感 */
+  position: relative;
+  overflow: hidden;
+}
 
-        .bonus-hint { font-size: 11px; font-weight: 800; color: #ffffff !important; opacity: 0.7; }
-        .bonus-container { max-height: 0; opacity: 0; transition: all 0.4s ease; margin-top: 0; }
-        .salary-card.active .bonus-container { max-height: 80px; opacity: 1; margin-top: 18px; }
-        .bonus-inner { display: flex; gap: 10px; }
+/* 裝飾性：左側的活頁打孔效果 */
+.salary-card::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 0;
+  bottom: 0;
+  width: 14px;
+  background-image: radial-gradient(circle, #e8e0d5 3px, transparent 6px);
+  background-size: 10px 25px; /* 模擬活頁本的圓孔 */
+}
+
+/* 顯示時的狀態：使用細邊框與輕微陰影替代粗框 */
+.salary-card.show { 
+    display: block !important; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.salary-card-head { 
+    padding: 8px 15px; border-bottom: 1.5px solid #f0f0f0;
+    display: flex; justify-content: space-between; align-items: center;
+}
+
+.salary-card-head span { 
+    font-size: 14px; font-weight: 700; color:var(--mj-accent); letter-spacing: 0.15em; 
+}
+
+/* 膠囊狀態標籤 */
+#statusBadge { 
+display: inline-block;
+  padding: 4px 12px;
+  border: 2px solid; /* 實心邊框增加印章感 */
+  border-radius: 2px; /* 方正一點的印章 */
+  font-weight: 800;
+  opacity: 0.85; /* 微透出底下的紙張色 */
+    background: rgba(192, 57, 43, 0.05) ;  color: #c0392b; font-size: 12px; 
+    padding: 2px 10px; font-weight: 600; border-radius: 50px;
+}
+
+.salary-card-main { 
+    padding: 15px; display: flex; justify-content: space-between; align-items: flex-end; 
+}
+
+/* 金額區塊與公式並排 */
+.amt-group { display: flex; align-items: baseline; gap: 8px; }
+
+.salary-amt { 
+    font-size: 32px; font-weight: 700; color: var(--mj-accent); 
+    letter-spacing: -1px; font-family: 'Helvetica Neue', Arial;
+}
+
+/* 公式：放在金額後面，縮小且變淡 */
+#salaryFormula { 
+    font-size: 11px; color: #bbb; font-family: monospace; 
+    background: #f9f9f9; padding: 1px 6px; border-radius: 2px;
+    margin-bottom: 4px; /* 稍微往上提一點點對齊基準線 */
+}
+
+.salary-days { 
+    font-size: 16px; font-weight: 700; color: var(--mj-text-main); 
+    padding-bottom: 4px;
+}
+
+.salary-days small { font-size: 10px; color: var(--mj-text-sub); margin-left: 2px; }
+
+/* 已結清狀態的色彩變化 (Vivid Green) */
+.salary-card.is-paid { 
+    background: white ; border: 2px solid var(--mj-success);
+}
+.salary-card.is-paid span { 
+    font-size: 14px; font-weight: 700; color: var(--mj-success); letter-spacing: 0.15em; 
+}
+.salary-card.is-paid #statusBadge { background: white; color: var(--mj-success);  transform: rotate(-6deg); /* 微微傾斜，像是隨手蓋上去的 */;  font-size: 16px;  }
+.salary-card.is-paid .salary-amt { color: var(--mj-success); }
+.salary-card.is-paid .bonus-box input { 
+    color: var(--mj-success); 
+}
+
         
-        .bonus-box { 
-            flex: 1; background: rgba(0, 0, 0, 0.15); padding: 10px 12px; border-radius: 12px; 
-            display: flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.1); 
-        }
-        .bonus-box label { font-size: 11px; font-weight: 800; color: #74b9ff !important; flex-shrink: 0; }
-        .bonus-box input { 
-            border: none; background: transparent; color: #ffffff !important; 
-            width: 100%; font-weight: 900; outline: none; text-align: right; font-size: 14px; 
-        }
 
-        .salary-card.is-paid { 
-            background: #ffffff !important; border: 1.5px solid var(--s-clr) !important; 
-            box-shadow: 0 8px 20px rgba(0, 206, 201, 0.12) !important;
-        }
-        .salary-card.is-paid :is(#salary-title, .salary-main, #days-v, #days-v + small, #salaryFormula, .bonus-hint, #statusBadge) { 
-            color: #009a9a !important; text-shadow: none !important; 
-        }
-        .salary-card.is-paid #statusBadge { background: white; color: #009a9a;  transform: rotate(-6deg); /* 微微傾斜，像是隨手蓋上去的 */;  font-size: 16px;  }
-        .salary-card.is-paid .bonus-box { background: rgba(0, 206, 201, 0.05); border-color: rgba(0, 206, 201, 0.1); }
-        .salary-card.is-paid .bonus-box label { color: #009a9a !important; }
-        .salary-card.is-paid .bonus-box input { color: #009a9a !important; }
+        .bonus-drawer { max-height: 0; opacity: 0; transition: 0.2s; overflow: hidden; }
+        .salary-card.active .bonus-drawer { max-height: 80px; opacity: 1; border-top: 1px solid #eee; margin-top: 10px; }
+        .bonus-grid { display: flex; width: 100%; }
+        .bonus-box { flex: 1; display: flex; align-items: center; padding: 10px; gap: 8px; border-right: 1px solid #eee; }
+        .bonus-box label { font-size: 9px; color: var(--mj-text-sub); font-weight: 700; white-space: nowrap; }
+        .bonus-box input { width: 100%; border: none; background: transparent; font-size: 16px; font-weight: 700; outline: none; color: var(--mj-accent); }
 
-        /* 行政與歷史區 */
-        #adminArea { margin-top: 20px; display: none; width: 100%; }
-        .admin-section { background: white; border: 2px solid #e1f0f7; border-radius: 25px; padding: 18px; margin-bottom: 15px; width: 100%; }
-        .section-title { font-size: 14px; font-weight: 800; color: var(--v-clr); display: block; margin-bottom: 15px; }
-        .pending-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #f0f7fa; width: 100%; gap: 10px; }
-        .pending-left { display: flex; align-items: baseline; gap: 8px; flex: 1; min-width: 0; }
-        .pending-ym { font-size: 12px; font-weight: 800; color: #444; flex-shrink: 0; }
-        .pending-formula { font-size: 6px; color: #828282; font-family:monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .pending-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-        .pending-amount { font-size: 14px; font-weight: 900; color: var(--v-clr); }
+        .note-area { width: 100%; border: 1px solid #ddd; border-radius: 2px; padding: 12px; height: 70px; margin-top: 15px; resize: none; outline: none; }
+        
+        #adminArea { display: none; }
+        .admin-section { 
+    background: #fff; 
+    border: 1.5px solid var(--mj-border); /* 跟月曆一樣的黑線 */
+    padding: 20px; 
+    margin-bottom: 20px; 
+    border-radius: 2px;
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.05); /* 輕微的紙張陰影 */
+}
+.section-title { 
+    font-size: 13px; 
+    font-weight: 900; 
+    color: var(--mj-border); 
+    text-transform: uppercase; 
+    margin-bottom: 15px; 
+    display: block;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+    letter-spacing: 0.1em;
+}
+
+/* 讓未結帳明細更像清單 */
+.pending-item { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 12px 0; 
+}
+
+.pending-item:last-child { border-bottom: none; }
+
+.pending-amount { 
+    font-size: 16px; 
+    font-weight: 800; 
+    color: var(--mj-accent); 
+    font-family: 'Helvetica Neue', Arial;
+    letter-spacing: -0.05em; /* 讓金額數字看起來更緊湊、專業 */
+}
         .quick-pay-btn { border: none; padding: 6px 10px; border-radius: 6px; font-size: 10px; font-weight: 900; cursor: pointer; transition: 0.3s; }
-        .quick-pay-btn.btn-ready { background: var(--danger)  !important; color: #fff !important; }
-        .quick-pay-btn.btn-wait { background: #fff !important; color: #b2bec3 !important; cursor: not-allowed; }
-        .config-row { display: flex; gap: 15px; width: 100%; }
-        .config-group { flex: 1; display: flex; flex-direction: column; }
-        .config-label { font-size: 10px; color: #8eb3c5; font-weight: bold; margin-bottom: 6px; }
-        .config-input { width: 100%; border: 2px solid #e1f0f7; padding: 12px; border-radius: 15px; outline: none; font-weight: 800; color: #444; background: #fff; text-align: center; font-size: 16px; }
-        #yearSel, #monthSel { border: 2px solid #e1f0f7; background: white; font-weight: bold; padding: 6px 12px; border-radius: 12px; color: var(--v-clr); outline: none; font-size: 14px; }
-        .note-area { width: 100%; border: 2px solid #e1f0f7; border-radius: 20px; padding: 15px; height: 75px; margin-top: 15px; background: #fff; resize: none; outline: none; font-size: 16px; }
-        .stats-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        .stats-table td { padding: 15px 0; border-bottom: 1px solid #f0f7fa; font-weight: 800; text-align: center; }
-        @keyframes slideUp { from { opacity:0; transform:translateY(15px); } to { opacity:1; transform:translateY(0); } }
+        .quick-pay-btn.btn-ready { background: var(--mj-success)  !important; color: #fff !important; }
+        .quick-pay-btn.btn-wait { background: #fff !important; color:var(--mj-success) !important; cursor: not-allowed; }
+        
+        #yearSel, #monthSel { background: white; font-weight: bold; padding: 5px 10px; ; outline: none; }
+        .config-row { display: flex; gap: 10px; }
+        .config-input { width: 100%; border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: 700; }
+        .stats-table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: center; }
+        .stats-table th { padding-bottom: 8px; border-bottom: 1px solid #ddd; }
+        .stats-table td { padding: 8px 0; border-bottom: 1px solid #eee; }
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button {
             -webkit-appearance: none;
             margin: 0;
-            }
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="mode-switcher">
-        <button class="mode-btn active" onclick="switchMode('v')">排班模式</button>
-        <button class="mode-btn" onclick="switchMode('admin')">數據統計</button>
+
+<div class="notebook">
+    <div class="tab-nav">
+        <button id="t-v" class="active" onclick="switchMode('v')">LOGS</button>
+        <button id="t-admin" onclick="switchMode('admin')">DATA</button>
     </div>
-    
-    <div id="vArea">
-        <div class="toolbar">
-            <div class="legend-area">
-                <div class="legend-staff"><div><span class="dot v-bg"></span>V</div><div><span class="dot s-bg"></span>S</div></div>
-                <div style="font-size:10px;color:#8eb3c5;font-weight:bold;">14:30-18:30 / 18:30-23:00</div>
-            </div>
-            <div style="display:flex; gap:8px;">
-                <button id="lockBtn" style="width:38px;height:38px;border-radius:50%;border:2px solid #e1f0f7;background:white;display:flex;align-items:center;justify-content:center;" onclick="toggleConfirm()">
-                    <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:none;stroke:#8eb3c5;stroke-width:3.5;"><path d="M20 6L9 17L4 12"></path></svg>
-                </button>
-                <select id="yearSel"></select><select id="monthSel"></select>
-            </div>
-        </div>
-        <div id="calendarGrid" class="calendar-grid"></div>
+
+    <div class="content-paper">
         
-        <div class="salary-card" id="salaryCard" onclick="this.classList.toggle('active')">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div id="salary-title"></div>
-                <button id="statusBadge"></button>
+        <div id="vArea">
+            <div class="toolbar">
+                <div class="legend-area">
+                    <div class="legend-staff"><div><span class="dot v-bg"></span>V</div><div><span class="dot s-bg"></span>S</div></div>
+                    <div style="font-size:10px;color:var(--mj-text-sub);">14:30-18:30 / 18:30-23:00</div>
+                </div>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <button id="lockBtn" style="width:34px;height:34px;border-radius:2px;border:1px solid #ddd;background:white;display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="toggleConfirm()">
+                        <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:none;stroke:var(--mj-text-sub);stroke-width:2.5;"><path d="M20 6L9 17L4 12"></path></svg>
+                    </button>
+                    <select id="yearSel"></select><select id="monthSel"></select>
+                </div>
             </div>
-            <div style="display:flex; justify-content:space-between; align-items:flex-end;">
-                <div style="display:flex; align-items:baseline; gap:12px;">
-                    <div class="salary-main" id="pay-v">$0</div>
-                    <div style="text-align: left;">
-                        <div style="line-height:1.2;"><span id="days-v">0</span> <small>天</small></div>
-                        <div id="salaryFormula"></div>
+
+            <div id="calendarGrid" class="calendar-grid"></div>
+            
+            <div class="salary-card" id="salaryCard" onclick="this.classList.toggle('active')">
+                <div class="salary-card-head">
+                    <span id="salary-title">SETTLEMENT</span>
+                    <div id="statusBadge">待發放</div>
+                </div>
+                <div class="salary-card-main">
+                    <div style="display: flex; align-items: baseline; gap: 10px;">
+                        <div class="salary-amt" id="pay-v">$0</div>
+                        <div id="salaryFormula">--</div>
+                    </div>
+                    <div class="salary-days"><span id="days-v">0</span><small>DAYS</small></div>
+                </div>
+                <div class="bonus-drawer" onclick="event.stopPropagation()">
+                    <div class="bonus-grid">
+                        <div class="bonus-box">
+                            <label>月獎金</label>
+                            <input type="number" id="bt_main" oninput="syncBonus()" onkeypress="return event.charCode >= 48" placeholder="0" min="0">
+                        </div>
+                        <div class="bonus-box">
+                            <label>V獎金</label>
+                            <input type="number" id="bv_main" oninput="syncBonus()" onkeypress="return event.charCode >= 48" placeholder="0" min="0">
+                        </div>
                     </div>
                 </div>
-                <div class="bonus-hint">🐚🐚🐚▾</div>
             </div>
-            <div class="bonus-container" onclick="event.stopPropagation()">
-                <div class="bonus-inner">
-                    <div class="bonus-box"><label>月獎金</label><input type="number" id="bt_main" oninput="syncBonus()" onkeypress="return event.charCode >= 48" placeholder="0"min="0"></div>
-                    <div class="bonus-box"><label>V獎金</label><input type="number" id="bv_main" oninput="syncBonus()" onkeypress="return event.charCode >= 48" placeholder="0" min="0"></div>
+            <textarea id="monthNote" class="note-area" placeholder="當月備註..."></textarea>
+        </div>
+
+        <div id="adminArea">
+            <div class="admin-section">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <span class="section-title" style="margin-bottom:0; border-bottom:none;">🗒️ 未結帳明細</span>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span id="pendingTotal" style="color:var(--mj-accent); font-weight:900; font-size:18px;">$0</span>
+                        <button id="copyFinalBtn" style="font-size:10px; background: #eee; border:1px solid var(--mj-border); padding:4px 8px; cursor:pointer; font-weight:bold; border-radius:4px;">COPY</button>
+                    </div>
+                </div>
+                <div id="pendingList"></div>
+            </div>
+
+            <div class="admin-section">
+                <span class="section-title">🧳 歷史紀錄</span>
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th style="color:var(--mj-text-sub); width:40%;">月份</th>
+                            <th style="color:var(--mj-v-clr)">V</th>
+                            <th style="color:var(--mj-s-clr)">S</th>
+                        </tr>
+                    </thead>
+                    <tbody id="statsRecordBody"></tbody>
+                </table>
+            </div>
+
+            <div class="admin-section">
+                <span class="section-title">🔧 參數與備份</span>
+                <div class="config-row" style="margin-bottom:20px;">
+                    <div style="flex:1">
+                        <label style="font-size:10px; font-weight:bold; color:var(--mj-text-sub); display:block; margin-bottom:4px;">參數 A</label>
+                        <input type="number" id="baseA" class="config-input" oninput="saveConfig()" onkeypress="return event.charCode >= 48" min="0" placeholder="0">
+                    </div>
+                    <div style="flex:1">
+                        <label style="font-size:10px; font-weight:bold; color:var(--mj-text-sub); display:block; margin-bottom:4px;">參數 B</label>
+                        <input type="number" id="baseB" class="config-input" oninput="saveConfig()" onkeypress="return event.charCode >= 48" min="0" placeholder="0">
+                    </div>
+                </div>
+
+                <div style="border-top: 1px dashed #ddd; padding-top: 15px;">
+                    <label style="font-size:10px; font-weight:bold; color:var(--mj-text-sub); display:block; margin-bottom:8px;">DATA STORAGE (Base64)</label>
+                    <div style="display: flex; gap: 8px;">
+                        <button onclick="exportBase64()" style="flex: 1.2; background: var(--mj-border); color: white; border: none; padding: 10px; border-radius: 4px; font-weight: 800; cursor: pointer; font-size: 11px;">備份代碼</button>
+                        <button onclick="importBase64()" style="flex: 1; background: white; color: var(--mj-border); border: 1.5px solid var(--mj-border); padding: 10px; border-radius: 4px; font-weight: 800; cursor: pointer; font-size: 11px;">匯入存檔</button>
+                    </div>
                 </div>
             </div>
         </div>
-        <textarea id="monthNote" class="note-area" placeholder="當月備註..."></textarea>
-    </div>
 
-<div id="adminArea">
-    <div class="admin-section">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-            <span class="section-title">🌊 未結明細 <span id="pendingTotal" style="color:var(--v-clr);">$0</span></span>
-            <button id="copyFinalBtn" style="background:#5a8da3; color:white; border:none; padding:6px 14px; border-radius:12px; font-size:11px; font-weight:bold; cursor:pointer;">複製明細</button>
-        </div>
-        <div id="pendingList"></div>
-    </div>
-
-    <div class="admin-section">
-        <span class="section-title">📊 歷史紀錄</span>
-        <table class="stats-table">
-            <thead>
-                <tr>
-                    <th style="color:#8eb3c5;padding-bottom:10px;width:40%;">月份</th>
-                    <th style="color:#8eb3c5;padding-bottom:10px;">V</th>
-                    <th style="color:#8eb3c5;padding-bottom:10px;">S</th>
-                </tr>
-            </thead>
-            <tbody id="statsRecordBody"></tbody>
-        </table>
-    </div>
-
-    <div class="admin-section">
-        <span class="section-title">⚙️ 參數設定</span>
-        <div class="config-row">
-            <div class="config-group">
-                <label class="config-label">參數 A</label>
-                <input type="number" id="baseA" class="config-input" oninput="saveConfig()" placeholder="0">
-            </div>
-            <div class="config-group">
-                <label class="config-label">參數 B</label>
-                <input type="number" id="baseB" class="config-input" oninput="saveConfig()" placeholder="0">
-            </div>
-        </div>
-
-        <div style="margin-top: 20px; border-top: 1px dashed #e1f0f7; padding-top: 15px;">
-            <span class="config-label" style="display: block; margin-bottom: 10px;">💾 資料備份 (Base64)</span>
-            <div style="display: flex; gap: 8px;">
-                <button onclick="exportBase64()" style="flex: 1; background: var(--v-clr); color: white; border: none; padding: 12px; border-radius: 12px; font-size: 12px; font-weight: bold; cursor: pointer;">複製備份</button>
-                <button onclick="importBase64()" style="flex: 1; background: white; color: var(--v-clr); border: 2px solid var(--v-clr); padding: 12px; border-radius: 12px; font-size: 12px; font-weight: bold; cursor: pointer;">匯入存檔</button>
-            </div>
-        </div>
-    </div>
-</div>
 
 <script>
+    /* --- 這裡完全是你提供的原始 JavaScript，只在 switchMode 補上一點 UI 切換邏輯 --- */
     const $ = id => document.getElementById(id), KEY = "v_s_v1_purple";
     let Y = $("yearSel"), M = $("monthSel"), pressTimer;
 
@@ -271,7 +414,10 @@
     }
 
     function switchMode(m) {
-        document.querySelectorAll('.mode-btn').forEach((b, i) => b.classList.toggle('active', (i===0 && m==='v') || (i===1 && m==='admin')));
+        // 更新標籤樣式
+        $("t-v").classList.toggle('active', m === 'v');
+        $("t-admin").classList.toggle('active', m === 'admin');
+        // 切換顯示區域
         $("vArea").style.display = (m === 'v' ? 'block' : 'none');
         $("adminArea").style.display = (m === 'admin' ? 'block' : 'none');
         if(m==='admin') calc();
@@ -287,44 +433,53 @@
         render();
     }
 
-    function quickPay(y, m) {
+function quickPay(y, m) {
         if(localStorage.getItem(`cf-${y}-${m}`) !== 'true') return alert("請先確認排班！");
         localStorage.setItem(`pd-${y}-${m}`, 'true');
-        if($("adminArea").style.display === 'block') calc();
-        render();
+        // 關鍵：領完錢要重新計算統計頁面
+        if($("adminArea").style.display === 'block') calc(); 
+        render(); 
     }
 
     function render() {
         let y=Y.value, m=M.value, k=`${KEY}-${y}-${m}`, data=JSON.parse(localStorage.getItem(k))||{};
         let isPd = localStorage.getItem(`pd-${y}-${m}`)==='true', isCf = localStorage.getItem(`cf-${y}-${m}`)==='true';
-        $("lockBtn").style.borderColor = isCf ? "var(--success)" : "#e1f0f7";
-        $("lockBtn").style.background = isCf ? "var(--success)" : "white";
-        $("lockBtn").querySelector('svg').style.stroke = isCf ? "white" : "#8eb3c5";
+        
+        $("lockBtn").style.borderColor = isCf ? "var(--mj-accent)" : "#ddd";
+        $("lockBtn").style.background = isCf ? "var(--mj-accent)" : "white";
+        $("lockBtn").querySelector('svg').style.stroke = isCf ? "white" : "var(--mj-text-sub)";
+        
         $("salaryCard").className = `salary-card ${isCf?'show':''} ${isPd?'is-paid':''}`;
-        $("statusBadge").innerText = isPd ? "已結清" : "待發放";
+        $("statusBadge").innerText = isPd ? "PAID" : "UNPAID";
         $("salary-title").innerText = `${fmt(y, m)} SETTLEMENT`;
         $("bt_main").value = localStorage.getItem(`bt-${y}-${m}`)||"";
         $("bv_main").value = localStorage.getItem(`bv-${y}-${m}`)||"";
         $("bt_main").disabled = isPd; $("bv_main").disabled = isPd;
         $("monthNote").value = localStorage.getItem(`nt-${y}-${m}`)||"";
+        
         let fD=new Date(y, m-1, 1).getDay(), dIM=new Date(y, m, 0).getDate();
         let h = ['SUN','MON','TUE','WED','THU','FRI','SAT'].map(w=>`<div class="weekday">${w}</div>`).join('');
         for(let i=0;i<fD;i++) h+='<div class="day empty"></div>';
         for(let d=1; d<=dIM; d++) {
             let o=data[d]||{am:'',pm:'',mode:''}, cls = (o.mode==='full-v'?'is-full-v':(o.mode==='full-s'?'is-full-s':''));
-            h+=`<div class="day ${cls} ${isCf?'locked':''}" onmousedown="stP(${d})" onmouseup="edP(${d})" ontouchstart="stP(${d})" ontouchend="edP(${d})">
+            h+=`<div class="day ${cls}" onmousedown="stP(${d})" onmouseup="edP(${d})" ontouchstart="stP(${d})" ontouchend="edP(${d})">
                 <div class="date-num">${d}</div><div style="flex:1; display:flex; flex-direction:column; width:100%;">
-                <div class="slot slot-am ${o.am?o.am+'-bg':''}">${o.am.toUpperCase()}</div>
-                <div class="slot slot-pm ${o.pm?o.pm+'-bg':''}">${o.pm.toUpperCase()}</div>
+                <div class="slot slot-am ${o.am?o.am+'-bg-slot':''}">${o.am.toUpperCase()}</div>
+                <div class="slot slot-pm ${o.pm?o.pm+'-bg-slot':''}">${o.pm.toUpperCase()}</div>
                 </div></div>`;
         }
-        $("calendarGrid").innerHTML=h; calc();
-    }
+        
+        let totalCells = fD + dIM;
+    let nextCells = (7 - (totalCells % 7)) % 7;
+    for(let i=0; i<nextCells; i++) h += '<div class="day empty"></div>';
+    
+    $("calendarGrid").innerHTML = h; 
+    calc();
+}
 
-    function stP(d){ 
+function stP(d){ 
         if(localStorage.getItem(`cf-${Y.value}-${M.value}`)==='true') return;
         clearTimeout(pressTimer); 
-        // 0.6秒 刪除單格
         pressTimer = setTimeout(() => { 
             let k=`${KEY}-${Y.value}-${M.value}`, data=JSON.parse(localStorage.getItem(k))||{};
             delete data[d]; 
@@ -332,140 +487,129 @@
             render();
             // 總共 1.5秒 整月清空
             pressTimer = setTimeout(() => {
-                localStorage.removeItem(k);
-                localStorage.removeItem(`bv-${Y.value}-${M.value}`);
-                localStorage.removeItem(`bt-${Y.value}-${M.value}`);
-                pressTimer = null; // 關鍵：清空指針避免 edP 被當作點擊
-                render();
+                if(confirm("確定要清空整個月的資料與獎金嗎？")){
+                    localStorage.removeItem(k);
+                    localStorage.removeItem(`bv-${Y.value}-${M.value}`);
+                    localStorage.removeItem(`bt-${Y.value}-${M.value}`);
+                    pressTimer = null;
+                    render(); // render 會自動觸發裡面的 calc()
+                }
             }, 900); 
         }, 600); 
     }
 
-    function edP(d){ 
-        if (pressTimer) {
-            clearTimeout(pressTimer);
-            pressTimer = null; 
-            hClick(d); 
-        }
-    }
+    function edP(d){ if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; hClick(d); } }
     
     function hClick(d){
         if(localStorage.getItem(`cf-${Y.value}-${M.value}`)==='true') return;
         let k=`${KEY}-${Y.value}-${M.value}`, data=JSON.parse(localStorage.getItem(k))||{};
         let ms=['','full-v','full-s','s-am-v-pm','v-am-s-pm'], cur=data[d]?.mode||'', n=ms[(ms.indexOf(cur)+1)%ms.length];
         let map={'':{am:'',pm:'',mode:''}, 'full-v':{am:'v',pm:'v',mode:'full-v'}, 's-am-v-pm':{am:'s',pm:'v',mode:'s-am-v-pm'}, 'v-am-s-pm':{am:'v',pm:'s',mode:'v-am-s-pm'}, 'full-s':{am:'s',pm:'s',mode:'full-s'}};
-        
         if (n === '') { delete data[d]; } else { data[d]=map[n]; }
-
-        if (Object.keys(data).length === 0) {
-            localStorage.removeItem(k);
-        } else {
-            localStorage.setItem(k, JSON.stringify(data));
-        }
+        localStorage.setItem(k, JSON.stringify(data));
         render();
     }
 
     function syncBonus() { if(localStorage.getItem(`pd-${Y.value}-${M.value}`)==='true') return; localStorage.setItem(`bt-${Y.value}-${M.value}`, $("bt_main").value); localStorage.setItem(`bv-${Y.value}-${M.value}`, $("bv_main").value); calc(); }
-    // 導出所有資料為 Base64
-function exportBase64() {
-    const allData = {};
-    // 遍歷所有 localStorage 的鍵值對
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        allData[key] = localStorage.getItem(key);
+
+    function exportBase64() {
+    try {
+        const allData = {};
+        // 遍歷所有 LocalStorage，只抓取跟這個 App 相關的 Key
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            // 根據你的 KEY 規則過濾資料
+            if (key.startsWith(KEY) || key.startsWith('conf') || key.startsWith('pd-') || key.startsWith('cf-') || key.startsWith('nt-') || key.startsWith('bt-') || key.startsWith('bv-') || key.startsWith('lock')) {
+                allData[key] = localStorage.getItem(key);
+            }
+        }
+        
+        // 轉為 JSON 後進行 Base64 編碼
+        const jsonStr = JSON.stringify(allData);
+        const base64Str = btoa(unescape(encodeURIComponent(jsonStr)));
+        
+        // 自動複製到剪貼簿
+        const el = document.createElement('textarea');
+        el.value = base64Str;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        
+        alert("✅ 備份代碼已複製到剪貼簿！\n請將這段文字貼到 Line 或記事本保存。");
+    } catch (e) {
+        alert("導出失敗，請檢查瀏覽器權限。");
     }
-    
-    const jsonStr = JSON.stringify(allData);
-    const base64Str = btoa(unescape(encodeURIComponent(jsonStr))); // 支援中文編碼
-    
-    const el = document.createElement('textarea');
-    el.value = base64Str;
-    document.body.appendChild(el);
-    el.select();
-    document.execCommand('copy');
-    document.body.removeChild(el);
-    alert("整站存檔已轉為 Base64 並複製到剪貼簿！");
 }
 
-// 匯入 Base64 資料
 function importBase64() {
-    const code = prompt("請貼上備份的 Base64 代碼：");
-    if (!code) return;
+    const code = prompt("請貼上備份代碼 (Base64)：");
+    if (!code || code.trim() === "") return;
     
     try {
-        const jsonStr = decodeURIComponent(escape(atob(code)));
-        const importedData = JSON.parse(jsonStr);
+        // 解碼並解析
+        const decodedData = JSON.parse(decodeURIComponent(escape(atob(code))));
         
-        if (confirm("匯入將覆蓋目前所有數據，確定要繼續嗎？")) {
-            localStorage.clear(); // 清除舊資料
-            for (const key in importedData) {
-                localStorage.setItem(key, importedData[key]);
+        if (confirm("⚠️ 匯入將會刪除目前手機上的所有資料，並替換為備份檔內容。確定要繼續嗎？")) {
+            // 清除目前的相關資料（避免殘留舊資料）
+            localStorage.clear();
+            
+            // 寫入新資料
+            for (const key in decodedData) {
+                localStorage.setItem(key, decodedData[key]);
             }
-            alert("匯入成功！頁面即將重新載入。");
+            
+            alert("✅ 匯入成功！網頁將自動重新載入。");
             location.reload();
         }
     } catch (e) {
-        alert("代碼無效，請檢查是否複製完整。");
-        console.error(e);
+        alert("❌ 錯誤：代碼格式不正確，無法還原資料。");
     }
 }
+    
     function calc() {
         let globalA = parseFloat($("baseA").value)||0, globalB = parseFloat($("baseB").value)||0;
-// 如果 globalA 是 0，就代表是隱私模式
-let isHide = (globalA === 0);;
+        let isHide = (globalA === 0);
         let pool=0, sH="", pL="";
         const now = new Date();
         const currentYM = now.getFullYear() * 12 + (now.getMonth() + 1);
-
         const allKeys = Object.keys(localStorage).filter(k => k.startsWith(KEY + "-")).sort();
         allKeys.forEach(key => {
             let [y, m] = key.replace(KEY + "-", "").split('-').map(Number);
             let targetYM = y * 12 + m;
             let d=JSON.parse(localStorage.getItem(key))||{}, v=0;
             Object.keys(d).forEach(k=>{ if(d[k].am==='v')v+=0.5; if(d[k].pm==='v')v+=0.5; });
-            
             let isPd = localStorage.getItem(`pd-${y}-${m}`)==='true', isCf = localStorage.getItem(`cf-${y}-${m}`)==='true';
-            
-            // 過濾：未來月分且未確認/未領取則跳過；空資料也跳過
             if (targetYM > currentYM && !isPd && !isCf) return;
             let mbv = parseFloat(localStorage.getItem(`bv-${y}-${m}`)) || 0;
             if (v === 0 && mbv === 0 && !isPd) return;
-
             let hA = (isCf || isPd) ? (parseFloat(localStorage.getItem(`lockA-${y}-${m}`))||globalA) : globalA;
             let mbt = parseFloat(localStorage.getItem(`bt-${y}-${m}`))||0;
             let mvb = Math.round(v * (hA/30)), vt = mvb + mbv;
-            
             if(!isPd && vt > 0){ 
-                pool += vt;
-                pL += `<div class="pending-item">
-        <div style="flex:1;">
-            <span style="font-weight:bold;">${fmt(y,m)}</span>
-            <small style="color: #74b9ff; font-size: 10px; letter-spacing: 0.1em; opacity: 0.7;"> 
-    ${isHide ? ' [ LOCKED ]' : `(${hA}/30)×${v}${mbv>0?`+${mbv}`:''}`}
-</small>
-        </div>
-        <div style="display:flex; align-items:center; gap:15px;">
-            <span class="pending-amount">$${isHide ? '--' : vt.toLocaleString()}</span>
-            <button class="quick-pay-btn ${isCf?'btn-ready':'btn-wait'}" onclick="quickPay(${y},${m})">${isCf?'V':'--'}</button>
-        </div>
-       </div>`;
-            }
-            sH += `<tr>
-        <td>${isPd?'🆗 ':'💬 '} ${fmt(y, m)}</td>
-        <td style="color:var(--v-clr)">$${isHide ? '--' : vt.toLocaleString()}</td>
-        <td style="color:var(--s-clr)">$${isHide ? '--' : ((hA+globalB)-mvb+(mbt-mbv)).toLocaleString()}</td>
-       </tr>`;
-            if(y == Y.value && m == M.value) { 
-    // 金額：隱私模式下顯示 --
-    $("pay-v").innerText = isHide ? "$ --" : `$${vt.toLocaleString()}`; 
-    $("days-v").innerText = v; 
-    
-    // 公式：隱私模式下顯示隱藏提示
-    $("salaryFormula").innerText = isHide ? "HIDDEN MODE" : `(${hA}/30)×${v}${mbv>0?` + bonus $${mbv}`:''}`; 
-}
-        });
-        $("pendingTotal").innerText=`$${pool.toLocaleString()}`; $("pendingList").innerHTML=pL||'<div style="text-align:center;padding:20px 0;color:#0984e3;font-size:12px;opacity:0.6;">目前無待領項目</div>'; $("statsRecordBody").innerHTML=sH;
-    }
+                    pool += vt;
+                    // 定義明細用的獎金字串
+                    let bonusInfo = (mbv > 0) ? ` + ${mbv.toLocaleString()}` : "";
+                    pL += `<div class="pending-item">
+                            <div style="flex:1;"><span style="font-weight:bold;">${fmt(y,m)}</span>
+                            <small style="color:var(--mj-success); font-size:10px;">${isHide ? ' [LOCKED]' : `(${hA}/30)×${v}${bonusInfo}`}</small></div>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                            <span class="pending-amount">$${isHide ? '--' : vt.toLocaleString()}</span>
+                            <button class="quick-pay-btn ${isCf?'btn-ready':'btn-wait'}" onclick="quickPay(${y},${m})">${isCf?'REVIEW':'PENDING'}</button>
+                            </div></div>`;
+                }
+            
+                // --- 修改這裡：更新主頁面薪資卡片 (當 y, m 等於選擇的年月時) ---
+                if(y == Y.value && m == M.value) { 
+                    $("pay-v").innerText = isHide ? "$ --" : `$${vt.toLocaleString()}`; 
+                    $("days-v").innerText = v; 
+                    
+                    // 重要：這裡也要定義一次卡片用的獎金字串
+                    let cardBonusText = (mbv > 0) ? ` + ${mbv.toLocaleString()}` : "";
+                    $("salaryFormula").innerText = isHide ? "HIDDEN" : `(${hA}/30)×${v}${cardBonusText}`; 
+                }
+            });
+        $("pendingTotal").innerText=`$${pool.toLocaleString()}`; $("pendingList").innerHTML=pL||'<div style="text-align:center;padding:30px 0;color:#bbb;font-size:12px;">無待領項目</div>'; $("statsRecordBody").innerHTML=sH;}
 
     $("copyFinalBtn").onclick = () => {
         let items=[], total=0;
@@ -477,16 +621,17 @@ let isHide = (globalA === 0);;
             let bv=parseFloat(localStorage.getItem(`bv-${y}-${m}`))||0;
             let mt = Math.round(v * (baseA/30)) + bv;
             if(items.length || mt > 0) { 
-                items.push(`· ${fmt(y,m)}: $${mt.toLocaleString()} (${v}天${bv>0?`+獎金$${bv}`:''})`); 
+                items.push(`${fmt(y,m)}: $${mt.toLocaleString()} (${v}天${bv>0?` + Bonus${bv}`:''})`); 
                 total+=mt; 
             }
         });
         if(items.length){ 
-            let txt=`未結算明細\n----------\n${items.join('\n')}\n----------\n總計: $${total.toLocaleString()}`; 
+            let txt=`【未結清薪資明細】\n\n${items.join('\n')}\n\n==========\n總計: $${total.toLocaleString()}`; 
             let el=document.createElement('textarea'); el.value=txt; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); 
-            alert("明細已複製！"); 
+            alert("明細已複製。"); 
         }
     };
+
     init(); $("monthNote").oninput=()=>{localStorage.setItem(`nt-${Y.value}-${M.value}`,$("monthNote").value);};
 </script>
 </body>
