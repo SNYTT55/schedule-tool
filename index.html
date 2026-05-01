@@ -293,29 +293,37 @@ display: inline-block;
         }
 
         @media (max-width: 480px) {
-    /* 1. 修正選擇器為 .day，並讓它等比例拉長 */
+    /* 1. 讓格子不要被強制設為正方形，也不要設死高度 */
     .day {
-        /* 將原本 CSS 中的 aspect-ratio: 1 覆蓋掉，改為最小高度 */
         aspect-ratio: auto !important; 
-        min-height: 110px !important; 
-        padding: 8px 2px !important;
+        min-height: 80px !important; /* 縮小高度，避免變成長條妖怪 */
+        padding: 4px !important;
+        justify-content: flex-start !important; /* 確保內容從頂部開始排 */
     }
 
-    /* 2. 讓日期數字大一點，更有手帳感 */
-    .date-num {
-        font-size: 13px !important;
+    /* 2. 修正標籤 (V/S) 的排列 */
+    .parent-container {
+        flex-direction: column !important; /* 讓 V 和 S 上下排，才不會擠在一起 */
+        gap: 2px;
+        margin-top: 15px; /* 給頂部日期留點空間 */
     }
 
-    /* 3. 讓標籤（V/S）在拉長的格子裡更顯眼 */
     .slot {
-        height: 28px !important; /* 增加標籤高度 */
-        font-size: 14px !important;
-        margin-top: 4px !important;
+        width: 100% !important; /* 寬度撐滿 */
+        height: 22px !important; 
+        flex: none !important; /* 取消平分寬度 */
     }
 
-    /* 4. 縮小外層邊距，讓手機畫面更飽滿 */
+    /* 3. 調整日期數字，不要被標籤壓到 */
+    .date-num {
+        position: static !important; /* 改回一般排列，不重疊 */
+        font-size: 11px !important;
+        padding: 0 0 2px 2px !important;
+    }
+
+    /* 4. 讓紙張整體寬一點，視覺才不會擠 */
     .content-paper {
-        padding: 20px 10px !important;
+        padding: 15px 8px !important;
     }
 }
     </style>
