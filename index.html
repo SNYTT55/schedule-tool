@@ -291,6 +291,33 @@ display: inline-block;
         input[type=number] {
             -moz-appearance: textfield;
         }
+
+        @media (max-width: 480px) {
+    /* 1. 修正選擇器為 .day，並讓它等比例拉長 */
+    .day {
+        /* 將原本 CSS 中的 aspect-ratio: 1 覆蓋掉，改為最小高度 */
+        aspect-ratio: auto !important; 
+        min-height: 110px !important; 
+        padding: 8px 2px !important;
+    }
+
+    /* 2. 讓日期數字大一點，更有手帳感 */
+    .date-num {
+        font-size: 13px !important;
+    }
+
+    /* 3. 讓標籤（V/S）在拉長的格子裡更顯眼 */
+    .slot {
+        height: 28px !important; /* 增加標籤高度 */
+        font-size: 14px !important;
+        margin-top: 4px !important;
+    }
+
+    /* 4. 縮小外層邊距，讓手機畫面更飽滿 */
+    .content-paper {
+        padding: 20px 10px !important;
+    }
+}
     </style>
 </head>
 <body>
